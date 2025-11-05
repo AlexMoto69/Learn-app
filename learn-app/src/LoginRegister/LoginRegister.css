@@ -1,0 +1,181 @@
+/* File: `learn-app/src/LoginRegister/LoginRegister.css` */
+/* Responsive, fluid cyberpunk theme using CSS variables and clamp() for scalable values */
+
+:root{
+    /* fluid base font-size (scales with viewport) */
+    font-size: clamp(14px, 1.2vw + 10px, 18px);
+
+    /* Colors */
+    --bg-1: #0b0f19;
+    --bg-2: #071026;
+    --card-bg: rgba(12,16,28,0.72);
+    --card-border: rgba(255,255,255,0.04);
+    --muted: #9aa3b2;
+    --text: #e6eef8;
+    --accent-pink: #ff3ca6;
+    --accent-blue: #2bd7ff;
+    --accent-gradient: linear-gradient(90deg, var(--accent-pink), var(--accent-blue));
+    --error-pink: #ff8ac6;
+
+    /* fluid sizes (use rem so they scale with root font-size) */
+    --radius-lg: clamp(0.75rem, 1.2vw, 1.25rem);
+    --radius-md: clamp(0.45rem, 0.9vw, 0.8rem);
+    --gap: clamp(0.5rem, 0.9vw, 1rem);
+    --pad-card: clamp(1rem, 2.2vw, 1.8rem);
+    --pad-input: clamp(0.6rem, 1vw, 0.9rem);
+    --shadow-soft: 0 10px 30px rgba(2,6,23,0.6);
+}
+
+/* Page background: full viewport, subtle neon glows */
+html, body {
+    height: 100%;
+    margin: 0;
+    background:
+            radial-gradient(1200px 500px at 15% 15%, rgba(43,215,255,0.08), transparent),
+            radial-gradient(900px 450px at 85% 85%, rgba(255,60,166,0.05), transparent),
+            linear-gradient(180deg, var(--bg-2), var(--bg-1));
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+.login-container {
+    display: flex;
+    border-radius: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+/* Card: fluid width, padding and radius */
+.login-form {
+    width: clamp(280px, 40vw, 420px);
+    max-width: 92%;
+    padding: var(--pad-card);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid var(--card-border);
+    box-shadow:
+            0 6px 22px rgba(2,6,23,0.75),   /* focused drop shadow */
+            0 0 14px rgba(10,12,10,0.28),    /* small ambient halo */
+            inset 0 1px 0 rgba(255,255,255,0.02); /* subtle inner rim */
+    backdrop-filter: blur(8px) saturate(120%);
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+    position: relative;
+    overflow: hidden;
+}
+
+/* neon rim */
+.login-form::before{
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: calc(var(--radius-lg) + 2px);
+    background: linear-gradient(120deg, rgba(255,60,166,0.06), rgba(43,215,255,0.06));
+    z-index: 0;
+    pointer-events: none;
+}
+.login-form > * { position: relative; z-index: 1; }
+
+/* Title and labels */
+.login-title {
+    margin: 0;
+    font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+    color: var(--text);
+    letter-spacing: 0.2px;
+}
+.label {
+    font-size: clamp(.8rem, 0.9vw, .9rem);
+    color: var(--muted);
+}
+
+/* Inputs - full width, fluid padding and radius */
+.input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--pad-input);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255,255,255,0.04);
+    background: rgba(8,10,18,0.6);
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+    transition: box-shadow 150ms ease, border-color 150ms ease, transform 120ms ease;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.input::placeholder { color: rgba(255,255,255,0.22); }
+
+/* focus neon glow */
+.input:focus {
+    border-color: rgba(43,215,255,0.9);
+    box-shadow: 0 0 22px rgba(43,215,255,0.12), 0 6px 18px rgba(2,6,23,0.6);
+    transform: translateY(-1px);
+}
+
+/* Submit button - fluid padding & radius */
+.submit {
+    margin-top: 0.25rem;
+    padding: clamp(0.6rem, 1vw, 0.95rem) clamp(0.9rem, 2vw, 1.2rem);
+    border-radius: clamp(0.75rem, 1.2vw, 1rem);
+    border: none;
+    background: var(--accent-gradient);
+    color: #071026;
+    cursor: pointer;
+    font-size: clamp(.95rem, 1.1vw, 1.05rem);
+    font-weight: 600;
+    box-shadow: 0 6px 30px rgba(43,215,255,0.12), 0 2px 8px rgba(2,6,23,0.6);
+    transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+    width: 100%;
+}
+.submit:hover { transform: translateY(-3px); filter: saturate(1.05) brightness(1.02); }
+.submit:active { transform: translateY(-1px) scale(.997); }
+.submit:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+
+/* Footer row */
+.footer {
+    margin-top: 0.4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.small {
+    font-size: clamp(.8rem, 0.9vw, .9rem);
+    color: var(--muted);
+}
+.link-button {
+    background: transparent;
+    border: none;
+    color: var(--accent-pink);
+    cursor: pointer;
+    padding: 0;
+    font-size: clamp(.8rem, 0.9vw, .9rem);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: text-shadow 120ms ease;
+}
+.link-button:hover { text-shadow: 0 0 10px rgba(255,60,166,0.25); }
+
+/* Error message */
+.error {
+    color: var(--error-pink);
+    font-size: clamp(.8rem, 0.9vw, .9rem);
+    margin-top: 0.25rem;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+}
+
+/* Small-screen tweaks for extra legibility and spacing */
+@media (max-width: 420px) {
+    .login-form { padding: clamp(0.75rem, 3.5vw, 1.1rem); border-radius: calc(var(--radius-lg) - 0.25rem); }
+    .login-title { font-size: clamp(1rem, 2.5vw, 1.05rem); }
+    .submit { padding-left: clamp(0.8rem, 3vw, 1rem); padding-right: clamp(0.8rem, 3vw, 1rem); }
+}
+
+/* Very large screens: keep card comfortably sized */
+@media (min-width: 1200px) {
+    .login-form { max-width: 460px; width: 34vw; }
+}
