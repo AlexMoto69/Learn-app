@@ -1,6 +1,4 @@
-// JavaScript
-// File: `learn-app/src/LoginRegister/Register.jsx`
-
+// File: learn-app/src/LoginRegister/Register.jsx
 import React, { useState } from 'react';
 import './LoginRegister.css';
 
@@ -12,6 +10,11 @@ export default function Register() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    function isValidEmail(value) {
+        // Simple, widely-used email regex (good enough for basic validation)
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
     function handleSubmit(e) {
         e.preventDefault();
         setError('');
@@ -20,6 +23,12 @@ export default function Register() {
             setError('Please fill out all fields.');
             return;
         }
+
+        if (!isValidEmail(email.trim())) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
         if (password.length < 6) {
             setError('Password must be at least 6 characters.');
             return;
