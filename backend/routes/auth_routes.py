@@ -24,13 +24,17 @@ from flask_jwt_extended import create_access_token
 def login():
     data = request.get_json()
 
-    if not data or "username" not in data or "password" not in data:
+    if not data or "password" not in data or ("username" not in data and "email" not in data):
         return jsonify({
             "success": False,
-            "error": "Missing username or password"
+            "error": "Missing username/email or password"
         }), 400
 
-    user = User.query.filter_by(username=data["username"]).first()
+    if "username" in data:
+        user = User.query.filter_by(username=data["username"]).first()
+    else:
+        user = User.query.filter_by(email=data["email"]).first()
+
     if not user:
         return jsonify({
             "success": False,
@@ -57,6 +61,7 @@ def login():
             "current_streak": user.current_streak
         }
     }), 200
+
 
 from flask_jwt_extended import jwt_required, get_jwt_identity
 

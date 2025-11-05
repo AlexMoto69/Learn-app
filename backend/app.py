@@ -3,7 +3,9 @@ from flask_cors import CORS
 from config import Config
 from extensions import db
 from flask_jwt_extended import JWTManager
+import openai
 
+openai.api_key = Config.OPENAI_API_KEYpyt
 jwt = JWTManager()
 
 def create_app():
