@@ -1,3 +1,4 @@
+// javascript
 // File: learn-app/src/LoginRegister/Register.jsx
 import React, { useState } from 'react';
 import './LoginRegister.css';
@@ -11,11 +12,10 @@ export default function Register() {
     const [loading, setLoading] = useState(false);
 
     function isValidEmail(value) {
-        // Simple, widely-used email regex (good enough for basic validation)
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
         setError('');
 
@@ -39,12 +39,45 @@ export default function Register() {
         }
 
         setLoading(true);
-        // Replace with real register call
-        setTimeout(() => {
+
+        const payload = {
+            name: name.trim(),
+            email: email.trim(),
+            password,
+            confirmPassword: confirm
+        };
+
+        try {
+            const res = await fetch('http://localhost:5000/api/register', { // update URL to your Flask route
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+                // add `credentials: 'include'` if your backend uses cookies/sessions
+            });
+
+            // try parse JSON; backend may return JSON with message or error
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(data.message || data.error || 'Registration failed.');
+                setLoading(false);
+                return;
+            }
+
+            // success
+            console.log('Registered:', data);
+            setName('');
+            setEmail('');
+            setPassword('');
+            setConfirm('');
             setLoading(false);
-            console.log('Registered:', { name, email });
-            // Optionally redirect or clear form
-        }, 800);
+        } catch (err) {
+            setError('Network error. Please try again.');
+            setLoading(false);
+        }
     }
 
     return (
