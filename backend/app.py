@@ -1,12 +1,8 @@
 from flask import Flask
 from flask_cors import CORS
 from config import Config
-from extensions import db
-from flask_jwt_extended import JWTManager
-import openai
+from extensions import db, jwt
 
-openai.api_key = Config.OPENAI_API_KEYpyt
-jwt = JWTManager()
 
 def create_app():
     app = Flask(__name__)
@@ -19,15 +15,19 @@ def create_app():
     from routes.auth_routes import auth
     app.register_blueprint(auth, url_prefix="/auth")
 
+    # register quiz blueprint
+    from routes.quiz_routes import quiz as quiz_bp
+    app.register_blueprint(quiz_bp, url_prefix="/api/quiz")
+
     @app.route("/")
     def home():
         return {"message": "Uplearn API is running"}
 
     return app
 
+
 if __name__ == "__main__":
     app = create_app()
     with app.app_context():
-        from models.user import User
         db.create_all()
     app.run(debug=True)

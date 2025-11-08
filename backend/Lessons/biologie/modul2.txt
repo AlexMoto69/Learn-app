@@ -1,0 +1,197 @@
+MODULUL 2 — Funcția de relație
+
+Funcția de relație permite organismului să perceapă, proceseze și răspundă la stimuli din mediu. Este realizată de:
+
+Sistemul nervos
+
+Analizatori (organele de simț)
+
+Glande
+
+Sistemul locomotor
+
+✅ 1. Sistemul nervos (SN)
+1.1 Clasificare
+A) După organizare (topografie)
+
+Sistemul nervos central (SNC)
+
+Encefal (creier)
+
+Măduva spinării
+
+Sistemul nervos periferic (SNP)
+
+31 perechi nervi spinali
+
+12 perechi nervi cranieni
+
+Ganglioni nervoși
+
+B) După funcție
+
+Sistemul nervos somatic (SNS)
+
+Controlează musculatura scheletică → mișcări voluntare.
+
+Sistemul nervos vegetativ (SNV)
+
+Reglează organele interne → mișcări involuntare.
+
+Are două componente:
+
+Simpatic – activ în situații de stres.
+
+crește frecvența cardiacă
+
+crește frecvența respiratorie
+
+dilată pupila
+
+inhibă secrețiile digestive
+
+Parasimpatic – activ în repaus.
+
+scade frecvența cardiacă
+
+scade frecvența respiratorie
+
+stimulează secrețiile digestive
+
+Majoritatea organelor au dublă inervație simpatic + parasimpatic.
+
+2. Măduva spinării
+2.1 Funcții
+Funcția reflexă
+
+Realizată prin substanța cenușie.
+
+Unitatea de bază: arcul reflex
+Receptor → Cale aferentă → Centru nervos → Cale eferentă → Efector
+
+Tipuri:
+
+Somatice
+
+monosinaptice (ex: reflexul rotulian)
+
+polisinaptice (reflexul de flexie)
+
+Vegetative
+
+înnăscute (respirație, clipit)
+
+dobândite (micțiune, mers, defecație)
+
+Funcția de conducere
+
+Realizată prin substanța albă.
+
+Căi nervoase:
+
+Ascendente (sensibilitate)
+
+tactilă grosieră – spinotalamic anterior
+
+termică + dureroasă – spinotalamic lateral
+
+tactilă fină – spinobulbară
+
+Descendente (motilitate)
+
+piramidale (mișcări voluntare)
+
+extrapiramidale (mișcări involuntare)
+
+3. Encefalul
+3.1 Structură
+
+Trunchi cerebral – bulb, punte, mezencefal
+
+închid reflexe (lacrimal, salivator etc.)
+
+originea reală a 10/12 nervi cranieni
+
+Cerebel
+
+echilibru și tonus muscular
+
+Diencefal – talamus, hipotalamus
+
+talamus → releu pentru sensibilitate
+
+hipotalamus → reglarea homeostaziei, legătura cu hipofiza
+
+Emisfere cerebrale
+
+scoarță cerebrală (ariile senzitive, motorii, asociative)
+
+controlul comportamentului, memoriei, gândirii
+
+4. Analizatorii (Organele de simț)
+Structură generală
+
+Segment periferic – receptor (ex: fotoreceptori)
+
+Segment intermediar – cale de conducere
+
+Segment central – scoarța cerebrală
+
+Tipuri principale
+👁️ Analizatorul vizual (ochiul)
+
+Tunici: sclera, coroida, retina
+
+Receptori:
+
+conuri (culoare)
+
+bastonașe (alb-negru)
+
+Mediile transparente: cornee, umoare apoasă, cristalin, umoare vitroasă
+
+Imaginea pe retină → micșorată și răsturnată
+
+Analizatorul acustico-vestibular (urechea)
+
+Ureche externă, medie, internă
+
+Receptori auditivi: celule ciliate (Organ Corti)
+
+Receptori vestibulari: otoliți + creste ampulare
+
+Analizatorul cutanat
+
+Receptori pentru durere, presiune, temperatură
+
+Localizați în derm
+
+5. Glandele
+Exocrine – secreție spre exterior sau într-o cavitate
+
+ex: glande salivare, gastrice, sebacee
+
+Endocrine – secreție de hormoni în sânge
+
+ex: hipofiză, tiroidă
+
+Mixte – au ambele funcții
+
+ex: pancreas, gonade
+
+6. Sistemul locomotor
+Componenta pasivă
+
+sistemul osos
+
+rol: protecție, susținere, depozit de minerale
+
+tipuri de oase: lungi, scurte, late, sesamoide
+
+Componenta activă
+
+sistemul muscular
+
+tipuri de contracții: izotonice, izometrice, auxotonice
+
+grupe musculare: cap, gât, trunchi, membre

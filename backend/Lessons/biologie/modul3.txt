@@ -1,0 +1,324 @@
+MODULUL 3 — Funcția de nutriție
+
+Funcția de nutriție include: digestia, respirația, circulația și excreția. Asigură substanțe nutritive, oxigen și eliminarea reziduurilor.
+
+1. Sistemul digestiv
+1.1 Componente
+
+Tub digestiv:
+
+cavitate bucală
+
+faringe
+
+esofag
+
+stomac
+
+intestin subțire (duoden, jejuno-ileon)
+
+intestin gros (cec, colon, rect)
+
+Glande anexe:
+
+glande salivare
+
+ficat (produce bilă)
+
+pancreas (secretă suc pancreatic)
+
+1.2 Digestia în cavitatea bucală
+
+mărunțire mecanică
+
+formarea bolului alimentar
+
+saliva conține amilază salivară (digestia amidonului)
+
+deglutiția = trecerea bolului în faringe
+
+1.3 Digestia în stomac
+
+Localizare: hipocondru stâng.
+
+Structură:
+
+fund, corp, antru piloric
+
+3 straturi musculare
+
+mucoasă cu glande gastrice
+
+Suc gastric:
+
+acid clorhidric
+
+mucus (protecție)
+
+enzime: pepsină, lipază gastrică, gelatinază
+
+la sugari: labferment (coagularea laptelui)
+
+Se formează chimul gastric.
+
+1.4 Digestia în intestinul subțire
+
+Duodenul: acționează bila, sucul pancreatic și sucul intestinal.
+
+Bila:
+
+produsă de ficat, depozitată în vezica biliară
+
+nu conține enzime
+
+emulsionarea lipidelor
+
+conține pigmenți biliari (bilirubină, biliverdină)
+
+Sucul pancreatic:
+
+enzime proteolitice: tripsină, chimotripsină
+
+lipolitice: lipaza pancreatică
+
+glicolitice: amilază pancreatică
+
+Sucul intestinal:
+
+lipază intestinală
+
+Produșii finali ai digestiei:
+
+proteine → aminoacizi
+
+glucide → glucoză
+
+lipide → acizi grași și glicerol
+
+Absorbția:
+
+glucoză, aminoacizi → activ
+
+acizi grași, glicerol → activ
+
+apă → pasiv
+
+1.5 Intestinul gros
+
+procese de fermentație și putrefacție
+
+absorbția apei, vitaminelor, resturilor de nutrimente
+
+formarea materiilor fecale → defecație
+
+1.6 Afecțiuni digestive
+
+gastrită
+
+ulcer
+
+enterocolită
+
+hepatită
+
+ciroză
+
+pancreatită
+
+apendicită
+
+litiază biliară
+
+2. Sistemul circulator
+
+Componente:
+
+sânge
+
+vase de sânge
+
+inimă
+
+2.1 Sângele
+
+Plasma:
+
+90% apă
+
+10% reziduu uscat (proteine, săruri)
+
+Elemente figurate:
+
+eritrocite → transport gaze
+
+leucocite → imunitate
+
+trombocite → coagulare
+
+2.2 Vase sanguine
+
+artere
+
+vene
+
+capilare (pereți subțiri → schimburi de gaze/substanțe)
+
+2.3 Inima
+
+Camere:
+
+2 atrii
+
+2 ventricule
+Valve atrioventriculare → circulație unidirecțională.
+
+Straturi:
+
+pericard (protecție)
+
+miocard (automatism cardiac)
+
+endocard (căptușire internă)
+
+Circulații:
+Circulația mare: ventricul stâng → țesuturi → atriul drept
+Circulația mică: ventricul drept → plămâni → atriul stâng
+
+Afecțiuni:
+
+infarct
+
+hipertensiune
+
+AVC
+
+ateroscleroză
+
+varice
+
+3. Sistemul respirator
+3.1 Componente
+
+Căi respiratorii:
+
+cavitate nazală
+
+faringe
+
+laringe
+
+trahee
+
+bronhii
+
+Rol: preluare, filtrare, încălzire, umidificare a aerului.
+
+Plămâni:
+
+3 lobi dreapta, 2 lobi stânga
+
+acoperiți de pleură (parietală și viscerală)
+
+unitate structurală: acin pulmonar (alveole)
+
+3.2 Schimbul de gaze
+
+Etapa alveolară:
+
+oxigenul trece din alveole în capilare
+
+CO₂ trece din capilare în alveole
+
+Transport:
+
+O₂: oxihemoglobină, dizolvat în plasmă
+
+CO₂: carbaminohemoglobină, bicarbonat, plasmă
+
+Etapa tisulară:
+
+schimb la nivel celular
+
+3.3 Ventilația pulmonară
+
+Inspirația:
+
+proces activ
+
+crește volumul cutiei toracice
+
+scade presiunea intrapulmonară
+
+Expirația:
+
+proces pasiv
+
+scade volumul toracic
+
+crește presiunea intrapulmonară
+
+Volume respiratorii:
+
+VC (volum curent) ~ 500 ml
+
+VIR, VER, VR
+
+CV = VC + VIR + VER
+
+CPT = CV + VR
+
+Afecțiuni:
+
+gripă
+
+laringită/faringită
+
+pneumonie
+
+TBC
+
+emfizem pulmonar
+
+fibroză pulmonară
+
+4. Sistemul excretor
+
+Componente:
+
+rinichi
+
+căi urinare
+
+4.1 Rinichii
+
+Localizare: zona lombară.
+
+Structură:
+
+capsulă renală
+
+zonă corticală
+
+zonă medulară (piramide Malpighi)
+
+Unitatea structurală: nefron.
+
+Etape formare urină:
+
+filtrare glomerulară → urină primară (~80 L/zi)
+
+reabsorbție/ secreție tubulară → urină finală (~1.8 L/zi)
+
+Eliminare: micțiune (prin uretră)
+
+Afecțiuni:
+
+cistită
+
+nefrite
+
+glomerulonefrită
+
+litiază renală
+
+insuficiență renală
