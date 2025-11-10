@@ -107,6 +107,17 @@ export default function Login({ onLogin, onRegisterClick }) {
                         Create one
                     </button>
                 </div>
+                {/* Dev helper: quickly skip login and show main menu (only visible with ?dev=1 or in dev build) */}
+                { (new URLSearchParams(window.location.search).get('dev') === '1') && (
+                    <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                        <button type="button" className="submit" onClick={() => {
+                            // set local flag and call onLogin to navigate to app
+                            localStorage.setItem('dev_skip_login', '1')
+                            if (onLogin) onLogin({ dev: true })
+                            else window.location.reload()
+                        }}>Dev: Skip to menu</button>
+                    </div>
+                )}
             </form>
         </div>
     );

@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import './LoginRegister.css';
 
-export default function Register() {
+export default function Register({ onSignIn }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -137,7 +137,7 @@ export default function Register() {
 
                 <div className="footer">
                     <div className="small">Already have an account?</div>
-                    <a href="/" className="link-button">Sign in</a>
+                    <a href="#" onClick={(e)=>{e.preventDefault(); if(onSignIn) onSignIn(); else window.location.href='/'}} className="link-button">Sign in</a>
                 </div>
             </form>
         </div>

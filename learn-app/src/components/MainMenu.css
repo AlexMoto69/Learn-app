@@ -1,0 +1,236 @@
+/* global reset to avoid unexpected body margin/scroll shifts */
+*{box-sizing:border-box}
+html,body,#root{margin:0;padding:0;overflow-x:hidden;overflow-y:auto;-webkit-font-smoothing:antialiased}
+
+/* Make native scrollbars blend with the header so no grey track shows through */
+/* WebKit (Chrome, Edge) */
+html::-webkit-scrollbar, body::-webkit-scrollbar{ width:12px; }
+html::-webkit-scrollbar-track, body::-webkit-scrollbar-track{ background: rgba(6,8,12,1); }
+html::-webkit-scrollbar-thumb, body::-webkit-scrollbar-thumb{ background: linear-gradient(180deg, #243242, #0f1b2a); border-radius:10px; }
+
+/* Firefox */
+body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
+
+/* Main menu styles matching the cyberpunk theme */
+.main-root{
+  /* inherit login background exactly */
+  --header-v: clamp(0.5rem, 1.2vw, 0.9rem); /* header vertical padding */
+  --logo-h: clamp(36px, 6vw, 84px); /* logo height used to compute header space */
+  display:flex;
+  width:100%;
+  align-items:flex-start; /* align to top */
+  justify-content:center;
+  /* remove fixed-header spacing because header will be sticky (in-flow) */
+  padding-top: 0;
+  background:
+    radial-gradient(1200px 500px at 15% 15%, rgba(43,215,255,0.08), transparent),
+    radial-gradient(900px 450px at 85% 85%, rgba(255,60,166,0.05), transparent),
+    linear-gradient(180deg, #071026, #0b0f19);
+}
+
+.main-card{
+  background: transparent; /* don't show inner card so it blends */
+  border-radius: 14px;
+  box-shadow: none;
+  border: none;
+}
+
+/* learn-app/src/components/MainMenu.css */
+.menu-header{
+    /* sticky full-width header: stays in-flow and won't overlap the scrollbar.
+       Use left/right 0 so it stretches, with a slightly opaque background and
+       a subtle bottom shadow to cover any seam/stripe. */
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    box-sizing: border-box;
+
+    display:flex;
+    align-items:center;
+    justify-content:center; /* center the inner content */
+    padding: var(--header-v) 0; /* vertical padding only, from variable */
+
+    /* fully opaque header background to avoid any scrollbar-track seam showing through */
+    background: rgba(6,8,12,1);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    z-index: 999; /* keep above content */
+}
+
+/* ensure the header fully covers any underlying seams by using an absolutely
+   positioned background layer inside the header. This avoids visual hairlines
+   caused by rounding or scrollbar tracks. */
+.menu-header{ position: relative; }
+.menu-header::before{
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    background: rgba(6,8,12,1);
+    pointer-events: none;
+    z-index: -1; /* behind header content but above page background */
+}
+
+/* inner wrapper: responsive and centered. Use 100% width but limit with max-width
+   so on large screens content doesn't stretch absurdly; on small screens it fills. */
+.menu-inner{
+    width: 100%;
+    max-width: min(1100px, 96vw);
+    margin: 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: clamp(0.5rem, 1.4vw, 1rem);
+    padding: 0 clamp(0.6rem, 2vw, 1.2rem);
+    box-sizing: border-box;
+    flex-wrap:nowrap; /* keep items on one line; they'll shrink if needed */
+}
+
+/* nav group on the left */
+.menu-nav{
+    display:flex;
+    gap: clamp(0.6rem, 1.4vw, 1rem);
+    align-items:center;
+    flex:1 1 auto; /* allow nav to take available space */
+}
+
+/* each item is icon above label (label hidden by default) */
+.nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap: .25rem;
+    padding: .25rem;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+    flex:0 0 auto
+}
+
+/* invisible circular area behind icon (becomes glow on hover) */
+.nav-icon-wrap{
+    /* increased by ~50%: previously clamp(36px, 3.6vw, 56px) */
+    width: clamp(54px, 5.4vw, 84px);
+    height: clamp(54px, 5.4vw, 84px);
+    display:grid;
+    place-items:center;
+    border-radius: 0;            /* remove circular frame */
+    transition: transform .18s ease; /* keep scale transition */
+    background: none;           /* remove any background "chenar" */
+    box-shadow: none;           /* remove glow box-shadow from wrapper */
+    padding: 0;                 /* ensure no inner spacing */
+    position: relative;         /* required for pseudo-element glow */
+    overflow: visible;
+}
+
+/* soft circular glow behind the icon (hidden by default) */
+.nav-icon-wrap::before{
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.95); /* slightly smaller initial scale */
+    width: 110%;                /* reduced from 140% to make glow tighter */
+    height: 110%;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity .18s ease, transform .18s ease;
+    /* tighter, lower-opacity radial gradient for a finer glow */
+    background: radial-gradient(circle at center,
+        rgba(43,215,255,0.14) 0%,
+        rgba(43,215,255,0.08) 18%,
+        rgba(43,215,255,0.03) 40%,
+        transparent 60%);
+    filter: blur(6px); /* soften the edges */
+}
+
+/* actual image (no visible container) */
+.nav-icon{
+    /* let the image fill most of the wrapper (was 62%) */
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    transition: transform .18s ease, filter .18s ease;
+    will-change: transform, filter;
+    border-radius: 0; /* ensure image itself isn't clipped to a circle */
+    position: relative;
+    z-index: 1; /* ensure image is above the glow pseudo-element */
+}
+
+/* small label hidden until hover */
+.nav-label{
+    font-size: .78rem;
+    color: var(--text, #e6eef8);
+    opacity: 0;
+    transform: translateY(-6px);
+    transition: opacity .16s ease, transform .16s ease;
+    pointer-events: none;
+}
+
+/* hover effects: scale, glow and reveal label */
+.nav-item:hover .nav-icon-wrap{
+    transform: scale(1.06); /* slightly reduced scale so overall effect is subtler */
+    background: none;   /* remove hover circular glow */
+    box-shadow: none;   /* remove wrapper shadow */
+}
+
+.nav-item:hover .nav-icon-wrap::before{
+    opacity: 0.6;            /* lowered maximum opacity for a finer glow */
+    transform: translate(-50%, -50%) scale(1.02); /* subtle growth on hover */
+}
+
+.nav-item:hover .nav-icon{
+    transform: scale(1.10); /* slightly reduced scale */
+    filter: drop-shadow(0 8px 18px rgba(43,215,255,0.06)); /* more subtle shadow */
+}
+
+.nav-item:hover .nav-label{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* small accessibility tweak: remove default focus outline if you wish */
+.nav-item:focus{
+    outline: none;
+}
+
+/* right-side app logo */
+.app-logo-wrap{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding-left: .4rem;
+}
+
+.app-logo{
+    height: var(--logo-h); /* use variable so header + content spacing match */
+    width: auto;
+    max-width: 84px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* tighten nav icon sizes on small screens so logo has space */
+@media (max-width:600px){
+    .nav-icon-wrap{ width: clamp(36px, 8vw, 56px); height: clamp(36px,8vw,56px); }
+    .menu-inner{ padding: 0 0.6rem; gap: 0.6rem; }
+}
+
+@media (max-width:420px){
+    .menu-inner{ padding: 0 0.4rem; }
+    .app-logo{ width: clamp(24px, 12vw, 56px); }
+}
+
+/* responsive: hide labels on small screens to keep icons-only */
+@media (max-width:900px){
+    .nav-label{ display:none; }
+}

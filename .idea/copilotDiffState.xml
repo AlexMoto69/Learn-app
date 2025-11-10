@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/learn-app/src/App.jsx">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/learn-app/src/App.jsx" />
+              <option name="originalContent" value="import React, { useState } from 'react'&#10;import MainMenu from './components/MainMenu'&#10;import './App.css'&#10;&#10;function Placeholder({ title, onBack }) {&#10;  return (&#10;    &lt;div className=&quot;placeholder-root&quot;&gt;&#10;      &lt;button className=&quot;back&quot; onClick={() =&gt; onBack &amp;&amp; onBack()}&gt;⬅ Back&lt;/button&gt;&#10;      &lt;h2&gt;{title}&lt;/h2&gt;&#10;      &lt;div className=&quot;placeholder-body&quot;&gt;Content for {title} will go here.&lt;/div&gt;&#10;    &lt;/div&gt;&#10;  )&#10;}&#10;&#10;export default function App(){&#10;  const [screen, setScreen] = useState('menu') // menu | lessons | daily | chatbot | friends&#10;&#10;  function handleNavigate(to){&#10;    setScreen(to === 'menu' ? 'menu' : to)&#10;  }&#10;&#10;  return (&#10;    &lt;div className=&quot;app-root&quot;&gt;&#10;      &lt;MainMenu onNavigate={handleNavigate} /&gt;&#10;      {screen === 'lessons' &amp;&amp; &lt;Placeholder title=&quot;Lessons&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'daily' &amp;&amp; &lt;Placeholder title=&quot;Daily Challenge&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'chatbot' &amp;&amp; &lt;Placeholder title=&quot;Chatbot&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'friends' &amp;&amp; &lt;Placeholder title=&quot;Friends&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;    &lt;/div&gt;&#10;  )&#10;}&#10;" />
+              <option name="updatedContent" value="import React, { useState } from 'react'&#10;import MainMenu from './components/MainMenu'&#10;import './App.css'&#10;import Lessons from './pages/Lessons'&#10;&#10;function Placeholder({ title, onBack }) {&#10;  return (&#10;    &lt;div className=&quot;placeholder-root&quot;&gt;&#10;      &lt;button className=&quot;back&quot; onClick={() =&gt; onBack &amp;&amp; onBack()}&gt;⬅ Back&lt;/button&gt;&#10;      &lt;h2&gt;{title}&lt;/h2&gt;&#10;      &lt;div className=&quot;placeholder-body&quot;&gt;Content for {title} will go here.&lt;/div&gt;&#10;    &lt;/div&gt;&#10;  )&#10;}&#10;&#10;export default function App(){&#10;  const [screen, setScreen] = useState('menu') // menu | lessons | daily | chatbot | friends&#10;&#10;  function handleNavigate(to){&#10;    setScreen(to === 'menu' ? 'menu' : to)&#10;  }&#10;&#10;  return (&#10;    &lt;div className=&quot;app-root&quot;&gt;&#10;      &lt;MainMenu onNavigate={handleNavigate} /&gt;&#10;      {screen === 'lessons' &amp;&amp; &lt;Lessons onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'daily' &amp;&amp; &lt;Placeholder title=&quot;Daily Challenge&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'chatbot' &amp;&amp; &lt;Placeholder title=&quot;Chatbot&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;      {screen === 'friends' &amp;&amp; &lt;Placeholder title=&quot;Friends&quot; onBack={()=&gt;handleNavigate('menu')} /&gt;}&#10;    &lt;/div&gt;&#10;  )&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
