@@ -16,16 +16,16 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
   /* inherit login background exactly */
   --header-v: clamp(0.5rem, 1.2vw, 0.9rem); /* header vertical padding */
   --logo-h: clamp(36px, 6vw, 84px); /* logo height used to compute header space */
+  --menu-max: 1100px; /* explicit cap for menu width — change this to restrict the bar */
+  --menu-h: clamp(64px, 8vw, 84px); /* fixed visual height for the menu bar */
+  --icon-size: clamp(36px, 4.4vw, 56px); /* icon wrapper size */
   display:flex;
   width:100%;
   align-items:flex-start; /* align to top */
   justify-content:center;
   /* remove fixed-header spacing because header will be sticky (in-flow) */
   padding-top: 0;
-  background:
-    radial-gradient(1200px 500px at 15% 15%, rgba(43,215,255,0.08), transparent),
-    radial-gradient(900px 450px at 85% 85%, rgba(255,60,166,0.05), transparent),
-    linear-gradient(180deg, #071026, #0b0f19);
+  background: transparent;
 }
 
 .main-card{
@@ -37,9 +37,7 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 
 /* learn-app/src/components/MainMenu.css */
 .menu-header{
-    /* sticky full-width header: stays in-flow and won't overlap the scrollbar.
-       Use left/right 0 so it stretches, with a slightly opaque background and
-       a subtle bottom shadow to cover any seam/stripe. */
+    /* keep header sticky but transparent so the inner bar (.menu-inner) is the visible, restricted menu */
     position: sticky;
     top: 0;
     left: 0;
@@ -49,153 +47,179 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 
     display:flex;
     align-items:center;
-    justify-content:center; /* center the inner content */
-    padding: var(--header-v) 0; /* vertical padding only, from variable */
+    justify-content:center;
+    padding: 0; /* let .menu-inner control vertical spacing */
 
-    /* fully opaque header background to avoid any scrollbar-track seam showing through */
-    background: rgba(6,8,12,1);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-    z-index: 999; /* keep above content */
+    /* make header itself transparent so the centered .menu-inner looks like the bar */
+    background: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    box-shadow: none; /* move shadow to .menu-inner */
+    z-index: 999;
 }
 
-/* ensure the header fully covers any underlying seams by using an absolutely
-   positioned background layer inside the header. This avoids visual hairlines
-   caused by rounding or scrollbar tracks. */
-.menu-header{ position: relative; }
 .menu-header::before{
+    /* ensure no full-width overlay exists */
     content: "";
     position: absolute;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
-    background: rgba(6,8,12,1);
+    background: transparent;
     pointer-events: none;
-    z-index: -1; /* behind header content but above page background */
+    z-index: -1;
 }
 
-/* inner wrapper: responsive and centered. Use 100% width but limit with max-width
-   so on large screens content doesn't stretch absurdly; on small screens it fills. */
+/* Restore .menu-inner to a normal centered container (not fixed). The visible fixed bar will use .restricted-menu instead. */
 .menu-inner{
     width: 100%;
-    max-width: min(1100px, 96vw);
+    max-width: var(--menu-max, 1100px);
     margin: 0 auto;
+
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap: clamp(0.5rem, 1.4vw, 1rem);
-    padding: 0 clamp(0.6rem, 2vw, 1.2rem);
+    padding: var(--header-v) clamp(0.6rem, 2vw, 1.2rem);
     box-sizing: border-box;
-    flex-wrap:nowrap; /* keep items on one line; they'll shrink if needed */
+    flex-wrap:nowrap;
 }
 
-/* nav group on the left */
-.menu-nav{
+/* New approach: fixed, centered restricted menu container. This ensures nothing else can stretch it. */
+.restricted-menu{
+    position: fixed;
+    top: 0; /* pin to top */
+    left: 50%;
+    transform: translateX(-50%);
+
+    /* limit width and be responsive */
+    width: min(var(--menu-max, 1100px), 96vw);
+    max-width: var(--menu-max, 1100px);
+
     display:flex;
-    gap: clamp(0.6rem, 1.4vw, 1rem);
     align-items:center;
-    flex:1 1 auto; /* allow nav to take available space */
+    justify-content:space-between;
+    gap: clamp(0.5rem, 1.4vw, 1rem);
+    padding: 0 clamp(0.6rem, 2vw, 1.2rem); /* vertical padding removed to keep constant height */
+    box-sizing: border-box;
+
+    background: rgba(6,8,12,0.98);
+    border-radius: 10px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    z-index: 2000; /* above everything */
+    pointer-events: auto;
+
+    height: var(--menu-h); /* fixed height */
+    min-height: var(--menu-h);
 }
 
-/* each item is icon above label (label hidden by default) */
+/* ensure the centered container doesn't animate its size */
+.restricted-menu.menu-hidden,
+.restricted-menu.menu-visible{
+    transition: opacity .12s linear, transform .12s linear; /* minimal transition only */
+}
+
+/* Reserve space so content below doesn't hide under the fixed bar */
+.main-card{ margin-top: calc(var(--menu-h) + 18px); background: transparent}
+
+/* keep the app logo pinned to the right of the restricted bar */
+.app-logo-wrap{ margin-left: auto; display:flex; align-items:center; }
+
+/* each nav item: inline, centered, fixed height so it cannot increase bar height */
+.menu-nav{ display:flex; gap: clamp(0.25rem, 0.8vw, 0.6rem); align-items:center; background: transparent}
+
 .nav-item{
-    display:flex;
-    flex-direction:column;
+    display:inline-flex;
     align-items:center;
-    gap: .25rem;
-    padding: .25rem;
+    justify-content:center;
+    height: 100%; /* fill the menu bar height */
+    padding: 0 8px; /* horizontal padding only */
     background: transparent;
     border: none;
     cursor: pointer;
     border-radius: 8px;
     -webkit-tap-highlight-color: transparent;
-    flex:0 0 auto
+    flex:0 0 auto;
+    position: relative; /* for absolute label */
 }
 
-/* invisible circular area behind icon (becomes glow on hover) */
+/* icon wrapper: fixed size determined by variable */
 .nav-icon-wrap{
-    /* increased by ~50%: previously clamp(36px, 3.6vw, 56px) */
-    width: clamp(54px, 5.4vw, 84px);
-    height: clamp(54px, 5.4vw, 84px);
+    width: var(--icon-size);
+    height: var(--icon-size);
     display:grid;
     place-items:center;
-    border-radius: 0;            /* remove circular frame */
-    transition: transform .18s ease; /* keep scale transition */
-    background: none;           /* remove any background "chenar" */
-    box-shadow: none;           /* remove glow box-shadow from wrapper */
-    padding: 0;                 /* ensure no inner spacing */
-    position: relative;         /* required for pseudo-element glow */
-    overflow: visible;
+    transition: transform .18s ease;
+    background: none;
+    box-shadow: none;
+    padding: 0;
 }
 
-/* soft circular glow behind the icon (hidden by default) */
-.nav-icon-wrap::before{
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0.95); /* slightly smaller initial scale */
-    width: 110%;                /* reduced from 140% to make glow tighter */
-    height: 110%;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0;
-    transition: opacity .18s ease, transform .18s ease;
-    /* tighter, lower-opacity radial gradient for a finer glow */
-    background: radial-gradient(circle at center,
-        rgba(43,215,255,0.14) 0%,
-        rgba(43,215,255,0.08) 18%,
-        rgba(43,215,255,0.03) 40%,
-        transparent 60%);
-    filter: blur(6px); /* soften the edges */
-}
-
-/* actual image (no visible container) */
 .nav-icon{
-    /* let the image fill most of the wrapper (was 62%) */
-    width: 90%;
-    height: 90%;
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     transition: transform .18s ease, filter .18s ease;
-    will-change: transform, filter;
-    border-radius: 0; /* ensure image itself isn't clipped to a circle */
-    position: relative;
-    z-index: 1; /* ensure image is above the glow pseudo-element */
 }
 
-/* small label hidden until hover */
+/* label is absolutely positioned so it doesn't affect layout */
 .nav-label{
-    font-size: .78rem;
-    color: var(--text, #e6eef8);
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 6px);
+    transform: translateX(-50%);
+    white-space: nowrap;
     opacity: 0;
-    transform: translateY(-6px);
-    transition: opacity .16s ease, transform .16s ease;
     pointer-events: none;
+    color: var(--text, #e6eef8);
+    font-size: .78rem;
+    background: rgba(0,0,0,0.5);
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+    transition: opacity .12s ease, transform .12s ease;
+    transform-origin: top center;
+    z-index: 2100;
 }
 
-/* hover effects: scale, glow and reveal label */
-.nav-item:hover .nav-icon-wrap{
-    transform: scale(1.06); /* slightly reduced scale so overall effect is subtler */
-    background: none;   /* remove hover circular glow */
-    box-shadow: none;   /* remove wrapper shadow */
-}
-
-.nav-item:hover .nav-icon-wrap::before{
-    opacity: 0.6;            /* lowered maximum opacity for a finer glow */
-    transform: translate(-50%, -50%) scale(1.02); /* subtle growth on hover */
-}
-
-.nav-item:hover .nav-icon{
-    transform: scale(1.10); /* slightly reduced scale */
-    filter: drop-shadow(0 8px 18px rgba(43,215,255,0.06)); /* more subtle shadow */
-}
-
-.nav-item:hover .nav-label{
+.nav-item:hover .nav-label,
+.nav-item:focus .nav-label{
     opacity: 1;
-    transform: translateY(0);
+    pointer-events: auto;
+}
+
+/* hover effects on icon only (won't affect header height) */
+.nav-item:hover .nav-icon-wrap{ transform: scale(1.06); }
+.nav-item:hover .nav-icon{ transform: scale(1.06); filter: drop-shadow(0 8px 18px rgba(43,215,255,0.06)); }
+
+/* very small screens: make bar full width and slightly taller */
+@media (max-width: 520px){
+    .restricted-menu{ left: 0; transform: none; width: 100%; max-width: 100%; border-radius: 0; top: 0; padding: 0.4rem; }
+    .main-card{ margin-top: calc(var(--menu-h) + 28px); }
+}
+
+/* responsive: hide labels on small screens to keep icons-only */
+@media (max-width:900px){
+    .nav-label{ display:none; }
+}
+
+/* small screens: allow horizontal scrolling for the icon group rather than wrapping or expanding */
+@media (max-width: 700px){
+    .menu-nav{ overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* tighten nav icon sizes on small screens so logo has space */
+@media (max-width:600px){
+    .nav-icon-wrap{ width: clamp(36px, 8vw, 56px); height: clamp(36px,8vw,56px); }
+    .app-logo-wrap{ width: clamp(36px, 8vw, 56px); height: clamp(36px,8vw,56px); }
+    .menu-inner{ padding: 0 0.6rem; gap: 0.6rem; }
+}
+
+@media (max-width:420px){
+    .menu-inner{ padding: 0 0.4rem; }
+    /* keep logo same as icon-size on small screens too */
+    .app-logo{ width: var(--icon-size); height: var(--icon-size); }
 }
 
 /* small accessibility tweak: remove default focus outline if you wish */
@@ -203,34 +227,11 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
     outline: none;
 }
 
-/* right-side app logo */
-.app-logo-wrap{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding-left: .4rem;
-}
-
+/* ensure app logo matches icon size */
+.restricted-menu .app-logo,
 .app-logo{
-    height: var(--logo-h); /* use variable so header + content spacing match */
-    width: auto;
-    max-width: 84px;
-    object-fit: contain;
-    flex-shrink: 0;
-}
-
-/* tighten nav icon sizes on small screens so logo has space */
-@media (max-width:600px){
-    .nav-icon-wrap{ width: clamp(36px, 8vw, 56px); height: clamp(36px,8vw,56px); }
-    .menu-inner{ padding: 0 0.6rem; gap: 0.6rem; }
-}
-
-@media (max-width:420px){
-    .menu-inner{ padding: 0 0.4rem; }
-    .app-logo{ width: clamp(24px, 12vw, 56px); }
-}
-
-/* responsive: hide labels on small screens to keep icons-only */
-@media (max-width:900px){
-    .nav-label{ display:none; }
+  width: var(--icon-size);
+  height: var(--icon-size);
+  object-fit: contain;
+  display: block;
 }

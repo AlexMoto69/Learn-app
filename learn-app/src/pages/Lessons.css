@@ -1,0 +1,213 @@
+/* add to `learn-app/src/pages/Lessons.css` */
+.lessons-root { box-sizing: border-box; padding: 1rem; --bg: #0f0b16; --card: #12101a; --accent: linear-gradient(135deg,#ff4dcb,#3ab7ff); --text: #e6eef8 }
+
+/* header layout: keep back button fixed and make title truncatable */
+.lessons-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.lessons-header .back { flex: 0 0 auto; }
+.lessons-header h3 {
+    flex: 1 1 auto;
+    min-width: 0; /* needed for text-overflow inside flex */
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text);
+}
+
+/* progress dots: fixed size so numbers / labels don't stretch the container */
+.progress-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+.progress-dots .dot {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* level strip */
+.level-strip {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.25rem;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+.level-btn {
+    --size: 5rem; /* scalable size for icons */
+    width: var(--size);
+    height: var(--size);
+    min-width: var(--size);
+    border-radius: 50%;
+    background-color: transparent;
+    border: 0;
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.level-btn .lvl-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity .18s ease, transform .18s ease, filter .18s ease;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.level-btn .default-img { opacity: 1; }
+.level-btn .active-img { opacity: 0; transform: scale(.98); filter: blur(0); }
+.level-btn .locked-img { opacity: 0; }
+
+.level-btn:hover .default-img { opacity: 0; transform: scale(.98); }
+.level-btn:hover .active-img {
+    opacity: 1;
+    transform: scale(1.02);
+    filter: drop-shadow(0 6px 16px rgba(58,183,255,0.18)) drop-shadow(0 2px 6px rgba(255,77,203,0.06));
+}
+
+.level-btn.active .default-img { opacity: 0; }
+.level-btn.active .active-img { opacity: 1; transform: scale(1.02); }
+
+.level-btn.locked .default-img { opacity: 0; }
+.level-btn.locked .locked-img {
+    opacity: 1;
+    filter: grayscale(.2) brightness(.9);
+}
+
+/* ensure lesson content doesn't push the header/menu size */
+.lesson-card { box-sizing: border-box; }
+
+/* lesson card */
+.lesson-card {
+    margin-top: 1.2rem;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding: 1rem;
+    border-radius: 12px;
+    box-shadow: 0 6px 30px rgba(3,6,15,0.6);
+    color: var(--text);
+}
+
+.question { font-size: 1.05rem; margin-bottom: .8rem; }
+
+.options { display: grid; gap: .6rem; grid-template-columns: 1fr; }
+
+.option {
+    padding: .8rem 1rem;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: background .18s ease, transform .12s ease, box-shadow .12s ease;
+}
+
+.option:hover { transform: translateY(-2%); box-shadow: 0 8px 20px rgba(0,0,0,0.45); }
+
+/* reveal colors */
+.option.correct { background: rgba(28,160,0,0.14); border-color: rgba(28,160,0,0.28); box-shadow: 0 6px 18px rgba(28,160,0,0.12); }
+.option.wrong { background: rgba(220,20,60,0.12); border-color: rgba(220,20,60,0.28); box-shadow: 0 6px 18px rgba(220,20,60,0.12); }
+
+.lesson-footer { display:flex; gap:1rem; align-items:flex-start; justify-content:space-between; margin-top:1rem; flex-wrap:wrap }
+.explanation { flex:1 1 60%; min-width:220px }
+.controls { display:flex; gap:.5rem; align-items:center }
+.ctrl { padding:.5rem .8rem; border-radius:8px; border:0; background:linear-gradient(90deg,#2b2b3a,#1b1a24); color:var(--text) }
+
+/* ensure level buttons don't show any fallback text/numbers (images only) */
+.level-btn { font-size: 0; }
+.level-btn .level-number { display: none !important; }
+/* keep the visually-hidden label available to assistive tech */
+.level-btn .visually-hidden { position: absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap }
+
+/* responsive: scale sizes using viewport width when small */
+@media (max-width: 600px){
+    .level-btn { --size: calc(min(18vw, 64px)); }
+    .lesson-card { padding: .8rem; border-radius: 10px }
+}
+
+@media (min-width: 601px) and (max-width: 1200px){
+    .level-btn { --size: calc(min(10vw, 72px)); }
+}
+
+/* utility */
+.visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap }
+
+/* preserve earlier rules (if present in original file) */
+/* header layout: keep back button fixed and make title truncatable */
+.lessons-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    width: 100%;
+    box-sizing: border-box;
+}
+.lessons-header .back { flex: 0 0 auto; }
+.lessons-header h3 {
+    flex: 1 1 auto;
+    min-width: 0; /* needed for text-overflow inside flex */
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* progress dots: fixed size so numbers / labels don't stretch the container */
+.progress-dots {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 8px 12px;
+    box-sizing: border-box;
+}
+.progress-dots .dot {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* ensure lesson content doesn't push the header/menu size */
+.lesson-card { box-sizing: border-box; }
+
+/* overlay/side menu safety (if you have a sliding menu) */
+.menu, .side-menu {
+    max-width: 320px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
