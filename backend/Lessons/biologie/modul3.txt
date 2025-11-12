@@ -7,35 +7,35 @@ Funcția de nutriție include: digestia, respirația, circulația și excreția.
 
 Tub digestiv:
 
-cavitate bucală
+Cavitate bucală
 
-faringe
+Faringe
 
-esofag
+Esofag
 
-stomac
+Stomac
 
-intestin subțire (duoden, jejuno-ileon)
+Intestin subțire (duoden, jejuno-ileon)
 
-intestin gros (cec, colon, rect)
+Intestin gros (cec, colon, rect)
 
 Glande anexe:
 
-glande salivare
+Glande salivare
 
-ficat (produce bilă)
+Ficat (produce bilă)
 
-pancreas (secretă suc pancreatic)
+Pancreas (secretă suc pancreatic)
 
 1.2 Digestia în cavitatea bucală
 
-mărunțire mecanică
+Mărunțire mecanică
 
-formarea bolului alimentar
+Formarea bolului alimentar
 
-saliva conține amilază salivară (digestia amidonului)
+Saliva conține amilază salivară (digestia amidonului)
 
-deglutiția = trecerea bolului în faringe
+Deglutiția = trecerea bolului în faringe
 
 1.3 Digestia în stomac
 
@@ -67,77 +67,77 @@ Duodenul: acționează bila, sucul pancreatic și sucul intestinal.
 
 Bila:
 
-produsă de ficat, depozitată în vezica biliară
+Produsă de ficat, depozitată în vezica biliară.
 
-nu conține enzime
+Nu conține enzime.
 
-emulsionarea lipidelor
+Emulsionarea lipidelor.
 
-conține pigmenți biliari (bilirubină, biliverdină)
+Conține pigmenți biliari (bilirubină, biliverdină).
 
 Sucul pancreatic:
 
-enzime proteolitice: tripsină, chimotripsină
+Enzime proteolitice: tripsină, chimotripsină
 
-lipolitice: lipaza pancreatică
+Lipolitice: lipaza pancreatică
 
-glicolitice: amilază pancreatică
+Glicolitice: amilază pancreatică
 
 Sucul intestinal:
 
-lipază intestinală
+Lipază intestinală
 
 Produșii finali ai digestiei:
 
-proteine → aminoacizi
+Proteine → aminoacizi
 
-glucide → glucoză
+Glucide → glucoză
 
-lipide → acizi grași și glicerol
+Lipide → acizi grași și glicerol
 
 Absorbția:
 
-glucoză, aminoacizi → activ
+Glucoză, aminoacizi → activ
 
-acizi grași, glicerol → activ
+Acizi grași, glicerol → activ
 
-apă → pasiv
+Apă → pasiv
 
 1.5 Intestinul gros
 
-procese de fermentație și putrefacție
+Procese de fermentație și putrefacție
 
-absorbția apei, vitaminelor, resturilor de nutrimente
+Absorbția apei, vitaminelor, resturilor de nutrimente
 
-formarea materiilor fecale → defecație
+Formarea materiilor fecale → defecație
 
 1.6 Afecțiuni digestive
 
-gastrită
+Gastrită
 
-ulcer
+Ulcer
 
-enterocolită
+Enterocolită
 
-hepatită
+Hepatită
 
-ciroză
+Ciroză
 
-pancreatită
+Pancreatită
 
-apendicită
+Apendicită
 
-litiază biliară
+Litiază biliară
 
 2. Sistemul circulator
 
 Componente:
 
-sânge
+Sânge
 
-vase de sânge
+Vase de sânge
 
-inimă
+Inimă
 
 2.1 Sângele
 
@@ -149,19 +149,19 @@ Plasma:
 
 Elemente figurate:
 
-eritrocite → transport gaze
+Eritrocite → transport gaze
 
-leucocite → imunitate
+Leucocite → imunitate
 
-trombocite → coagulare
+Trombocite → coagulare
 
 2.2 Vase sanguine
 
-artere
+Artere
 
-vene
+Vene
 
-capilare (pereți subțiri → schimburi de gaze/substanțe)
+Capilare (pereți subțiri → schimburi de gaze/substanțe)
 
 2.3 Inima
 
@@ -174,11 +174,11 @@ Valve atrioventriculare → circulație unidirecțională.
 
 Straturi:
 
-pericard (protecție)
+Pericard (protecție)
 
-miocard (automatism cardiac)
+Miocard (automatism cardiac)
 
-endocard (căptușire internă)
+Endocard (căptușire internă)
 
 Circulații:
 Circulația mare: ventricul stâng → țesuturi → atriul drept
@@ -186,30 +186,30 @@ Circulația mică: ventricul drept → plămâni → atriul stâng
 
 Afecțiuni:
 
-infarct
+Infarct
 
-hipertensiune
+Hipertensiune
 
 AVC
 
-ateroscleroză
+Ateroscleroză
 
-varice
+Varice
 
 3. Sistemul respirator
 3.1 Componente
 
 Căi respiratorii:
 
-cavitate nazală
+Cavitate nazală
 
-faringe
+Faringe
 
-laringe
+Laringe
 
-trahee
+Trahee
 
-bronhii
+Bronhii
 
 Rol: preluare, filtrare, încălzire, umidificare a aerului.
 
@@ -217,15 +217,15 @@ Plămâni:
 
 3 lobi dreapta, 2 lobi stânga
 
-acoperiți de pleură (parietală și viscerală)
+Acoperiți de pleură (parietală și viscerală)
 
-unitate structurală: acin pulmonar (alveole)
+Unitate structurală: acin pulmonar (alveole)
 
 3.2 Schimbul de gaze
 
 Etapa alveolară:
 
-oxigenul trece din alveole în capilare
+Oxigenul trece din alveole în capilare
 
 CO₂ trece din capilare în alveole
 
@@ -237,25 +237,25 @@ CO₂: carbaminohemoglobină, bicarbonat, plasmă
 
 Etapa tisulară:
 
-schimb la nivel celular
+Schimb la nivel celular
 
 3.3 Ventilația pulmonară
 
 Inspirația:
 
-proces activ
+Proces activ
 
-crește volumul cutiei toracice
+Crește volumul cutiei toracice
 
-scade presiunea intrapulmonară
+Scade presiunea intrapulmonară
 
 Expirația:
 
-proces pasiv
+Proces pasiv
 
-scade volumul toracic
+Scade volumul toracic
 
-crește presiunea intrapulmonară
+Crește presiunea intrapulmonară
 
 Volume respiratorii:
 
@@ -269,25 +269,25 @@ CPT = CV + VR
 
 Afecțiuni:
 
-gripă
+Gripă
 
-laringită/faringită
+Laringită/faringită
 
-pneumonie
+Pneumonie
 
 TBC
 
-emfizem pulmonar
+Emfizem pulmonar
 
-fibroză pulmonară
+Fibroză pulmonară
 
 4. Sistemul excretor
 
 Componente:
 
-rinichi
+Rinichi
 
-căi urinare
+Căi urinare
 
 4.1 Rinichii
 
@@ -295,30 +295,30 @@ Localizare: zona lombară.
 
 Structură:
 
-capsulă renală
+Capsulă renală
 
-zonă corticală
+Zonă corticală
 
-zonă medulară (piramide Malpighi)
+Zonă medulară (piramide Malpighi)
 
 Unitatea structurală: nefron.
 
 Etape formare urină:
 
-filtrare glomerulară → urină primară (~80 L/zi)
+Filtrare glomerulară → urină primară (~80 L/zi)
 
-reabsorbție/ secreție tubulară → urină finală (~1.8 L/zi)
+Reabsorbție/ secreție tubulară → urină finală (~1.8 L/zi)
 
 Eliminare: micțiune (prin uretră)
 
 Afecțiuni:
 
-cistită
+Cistită
 
-nefrite
+Nefrite
 
-glomerulonefrită
+Glomerulonefrită
 
-litiază renală
+Litiază renală
 
-insuficiență renală
+Insuficiență renală

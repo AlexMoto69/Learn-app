@@ -9,7 +9,7 @@ Grupa O (I)
 
 Antigene pe hematii: niciun antigen
 
-Anticorpi în plasmă: anticorpi α și anticorpi β
+Anticorpi în plasmă: anticorpi anti-A și anti-B
 
 Poate dona la: O, A, B, AB
 
@@ -19,7 +19,7 @@ Grupa A (II)
 
 Antigene pe hematii: antigen A
 
-Anticorpi în plasmă: anticorp β
+Anticorpi în plasmă: anticorp anti-B
 
 Poate dona la: A, AB
 
@@ -29,7 +29,7 @@ Grupa B (III)
 
 Antigene pe hematii: antigen B
 
-Anticorpi în plasmă: anticorp α
+Anticorpi în plasmă: anticorp anti-A
 
 Poate dona la: B, AB
 
@@ -65,9 +65,9 @@ Aceasta este o reacție periculoasă și trebuie evitată.
 
 Exemple:
 
-Antigen A + anticorp α → incompatibil
+Antigen A + anticorp anti-A → incompatibil
 
-Antigen B + anticorp β → incompatibil
+Antigen B + anticorp anti-B → incompatibil
 
 3. Sistemul Rh
 

@@ -119,12 +119,12 @@ inversie
 
 translocație
 
-5.3 Mutații genomice (aberatii numerice)
+5.3 Mutații genomice (aberații numerice)
 
 Afectează numărul cromozomilor.
 Exemple:
 
-Trisomie 21 (Sindrom Down)
+Trisomie 21 (sindrom Down)
 
 Monosomie X (Turner)
 
@@ -142,17 +142,17 @@ Biologici: virusuri
 7.1 Autozomale dominante
 
 O singură alelă mutantă determină boala.
-Exemplu: Coreea Huntington
+Exemplu: boala Huntington
 
 7.2 Autozomale recesive
 
 Apar doar în homozigot recesiv.
-Exemplu: Fibroza chistică
+Exemplu: fibroza chistică
 
 7.3 Legate de cromozomul X
 
 Mai frecvente la bărbați (doar un cromozom X).
-Exemplu: Daltonism
+Exemplu: daltonism
 
 8. Diagnostic genetic
 

@@ -22,9 +22,9 @@ Măduva spinării
 
 Sistemul nervos periferic (SNP)
 
-31 perechi nervi spinali
+31 perechi de nervi spinali
 
-12 perechi nervi cranieni
+12 perechi de nervi cranieni
 
 Ganglioni nervoși
 
@@ -40,25 +40,20 @@ Reglează organele interne → mișcări involuntare.
 
 Are două componente:
 
-Simpatic – activ în situații de stres.
+Simpatic – activ în situații de stres:
 
-crește frecvența cardiacă
+Crește frecvența cardiacă.
+Crește frecvența respiratorie.
+Dilată pupila.
+Inhibă secrețiile digestive.
 
-crește frecvența respiratorie
+Parasimpatic – activ în repaus:
 
-dilată pupila
+Scade frecvența cardiacă.
+Scade frecvența respiratorie.
+Stimulează secrețiile digestive.
 
-inhibă secrețiile digestive
-
-Parasimpatic – activ în repaus.
-
-scade frecvența cardiacă
-
-scade frecvența respiratorie
-
-stimulează secrețiile digestive
-
-Majoritatea organelor au dublă inervație simpatic + parasimpatic.
+Majoritatea organelor au dublă inervație — simpatică și parasimpatică.
 
 2. Măduva spinării
 2.1 Funcții
@@ -67,21 +62,21 @@ Funcția reflexă
 Realizată prin substanța cenușie.
 
 Unitatea de bază: arcul reflex
-Receptor → Cale aferentă → Centru nervos → Cale eferentă → Efector
+Receptor → cale aferentă → centru nervos → cale eferentă → efector
 
 Tipuri:
 
 Somatice
 
-monosinaptice (ex: reflexul rotulian)
+Monosinaptice (ex.: reflexul rotulian)
 
-polisinaptice (reflexul de flexie)
+Polisinaptice (reflexul de flexie)
 
 Vegetative
 
-înnăscute (respirație, clipit)
+Înnăscute (respirație, clipit)
 
-dobândite (micțiune, mers, defecație)
+Dobândite (micțiune, mers, defecație)
 
 Funcția de conducere
 
@@ -91,30 +86,30 @@ Căi nervoase:
 
 Ascendente (sensibilitate)
 
-tactilă grosieră – spinotalamic anterior
+Tactilă grosieră – spinotalamic anterior
 
-termică + dureroasă – spinotalamic lateral
+Termică și dureroasă – spinotalamic lateral
 
-tactilă fină – spinobulbară
+Tactilă fină – spinobulbară
 
 Descendente (motilitate)
 
-piramidale (mișcări voluntare)
+Piramidale (mișcări voluntare)
 
-extrapiramidale (mișcări involuntare)
+Extrapiramidale (mișcări involuntare)
 
 3. Encefalul
 3.1 Structură
 
 Trunchi cerebral – bulb, punte, mezencefal
 
-închid reflexe (lacrimal, salivator etc.)
+Închid reflexe (lacrimal, salivator etc.)
 
-originea reală a 10/12 nervi cranieni
+Origine: 10 dintre cele 12 perechi de nervi cranieni.
 
 Cerebel
 
-echilibru și tonus muscular
+Echilibru și tonus muscular.
 
 Diencefal – talamus, hipotalamus
 
@@ -124,29 +119,29 @@ hipotalamus → reglarea homeostaziei, legătura cu hipofiza
 
 Emisfere cerebrale
 
-scoarță cerebrală (ariile senzitive, motorii, asociative)
+Scoarță cerebrală (ariile senzitive, motorii, asociative)
 
-controlul comportamentului, memoriei, gândirii
+Controlul comportamentului, memoriei, gândirii
 
-4. Analizatorii (Organele de simț)
+4. Analizatorii (organele de simț)
 Structură generală
 
-Segment periferic – receptor (ex: fotoreceptori)
+Segment periferic – receptor (ex.: fotoreceptori)
 
 Segment intermediar – cale de conducere
 
 Segment central – scoarța cerebrală
 
 Tipuri principale
-👁️ Analizatorul vizual (ochiul)
+Analizatorul vizual (ochiul)
 
-Tunici: sclera, coroida, retina
+Tunici: sclera, coroida, retină
 
 Receptori:
 
-conuri (culoare)
+Conuri (vedere a culorii)
 
-bastonașe (alb-negru)
+Bastonașe (vedere alb-negru)
 
 Mediile transparente: cornee, umoare apoasă, cristalin, umoare vitroasă
 
@@ -156,9 +151,9 @@ Analizatorul acustico-vestibular (urechea)
 
 Ureche externă, medie, internă
 
-Receptori auditivi: celule ciliate (Organ Corti)
+Receptori auditivi: celule ciliate (Organul lui Corti)
 
-Receptori vestibulari: otoliți + creste ampulare
+Receptori vestibulari: otoliți și creste ampulare
 
 Analizatorul cutanat
 
@@ -169,29 +164,29 @@ Localizați în derm
 5. Glandele
 Exocrine – secreție spre exterior sau într-o cavitate
 
-ex: glande salivare, gastrice, sebacee
+ex.: glande salivare, gastrice, sebacee
 
 Endocrine – secreție de hormoni în sânge
 
-ex: hipofiză, tiroidă
+ex.: hipofiză, tiroidă
 
 Mixte – au ambele funcții
 
-ex: pancreas, gonade
+ex.: pancreas, gonade
 
 6. Sistemul locomotor
 Componenta pasivă
 
-sistemul osos
+Sistemul osos
 
-rol: protecție, susținere, depozit de minerale
+Rol: protecție, susținere, depozit de minerale
 
-tipuri de oase: lungi, scurte, late, sesamoide
+Tipuri de oase: lungi, scurte, late, sesamoide
 
 Componenta activă
 
-sistemul muscular
+Sistemul muscular
 
-tipuri de contracții: izotonice, izometrice, auxotonice
+Tipuri de contracții: izotonice, izometrice, auxotonice
 
-grupe musculare: cap, gât, trunchi, membre
+Grupe musculare: cap, gât, trunchi, membre

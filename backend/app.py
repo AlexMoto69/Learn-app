@@ -19,6 +19,14 @@ def create_app():
     from routes.quiz_routes import quiz as quiz_bp
     app.register_blueprint(quiz_bp, url_prefix="/api/quiz")
 
+    # register chatbot blueprint (lightweight, uses ollama)
+    from routes.chatbot_routes import chatbot as chatbot_bp
+    app.register_blueprint(chatbot_bp, url_prefix="/api/chatbot")
+
+    # register user quiz routes (daily quiz + submit)
+    from routes.user_quiz_routes import user_quiz as user_quiz_bp
+    app.register_blueprint(user_quiz_bp, url_prefix="/api/quiz")
+
     @app.route("/")
     def home():
         return {"message": "Uplearn API is running"}

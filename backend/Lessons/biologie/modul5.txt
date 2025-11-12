@@ -23,17 +23,17 @@ pentoză: dezoxiriboză
 
 baze azotate:
 
-purinice: Adenină (A), Guanină (G)
+purinice: adenină (A), guanină (G)
 
-pirimidinice: Timină (T), Citozină (C)
+pirimidinice: timină (T), citozină (C)
 
 radical fosfat
 
 Forme:
 
-structură primară: monocatenară
+Structură primară: secvența nucleotidelor
 
-structură secundară: bicatenară (A–T, G–C)
+Structură secundară: dublu catenar (A–T, G–C)
 
 1.3 ARN – Acid ribonucleic
 
@@ -45,7 +45,7 @@ baze azotate:
 
 purinice: A, G
 
-pirimidinice: Uracil (U), C
+pirimidinice: uracil (U), C
 
 radical fosfat
 
@@ -62,7 +62,7 @@ ARNv – material genetic la unele virusuri
 2. Funcțiile materialului genetic
 2.1 Funcția autocatalitică
 
-replicarea ADN după model semiconservativ
+Replicarea ADN după model semiconservativ
 
 2.2 Funcția heterocatalitică
 
