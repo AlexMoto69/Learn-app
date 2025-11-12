@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import MainMenu from './components/MainMenu'
 import './App.css'
 import Lessons from './pages/Lessons'
+import Chatbot from './pages/Chatbot'
 
 function Placeholder({ title, onBack }) {
   return (
@@ -25,7 +26,7 @@ export default function App(){
       <MainMenu onNavigate={handleNavigate} />
       {screen === 'lessons' && <Lessons onBack={()=>handleNavigate('menu')} />}
       {screen === 'daily' && <Placeholder title="Daily Challenge" onBack={()=>handleNavigate('menu')} />}
-      {screen === 'chatbot' && <Placeholder title="Chatbot" onBack={()=>handleNavigate('menu')} />}
+      {screen === 'chatbot' && <Chatbot onBack={()=>handleNavigate('menu')} />}
       {screen === 'friends' && <Placeholder title="Friends" onBack={()=>handleNavigate('menu')} />}
     </div>
   )

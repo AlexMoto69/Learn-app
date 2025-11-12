@@ -1,77 +1,98 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import './Lessons.css'
+import localLesson from '../data/lesson-1.json'
 
-// initial lesson data (from backend)
-const lessonData = {
-  module: '1',
-  questions: [
-    {
-      correct_index: 2,
-      explanation:
-        'Potrivit textului, organismul uman este organizat ierarhic și sistemele de organe reprezintă nivelul de organizare care include mai multe organe.',
-      options: ['A. Celule', 'B. Organe', 'C. Sisteme de organe', 'D. Organism'],
-      question: 'Care este nivelul de organizare care include sistemele de organe?',
-      source_sentence: 1,
-    },
-    {
-      correct_index: 0,
-      explanation:
-        'Potrivit textului, exemple de sisteme de organe sunt sistemul digestiv și sistemul nervos.',
-      options: [
-        'A. Sistem nervos și sistem endocrin',
-        'B. Inimă, ficat',
-        'C. Creier, măduva spinării',
-        'D. Plămâni, rinichi',
-      ],
-      question: 'Care sunt exemple de sisteme de organe?',
-      source_sentence: 1,
-    },
-    {
-      correct_index: 0,
-      explanation:
-        'Potrivit textului, organismul uman este organizat ierarhic și celula reprezintă nivelul de organizare care include structură și funcție asemănătoare.',
-      options: [
-        'A. Sistem de organe',
-        'B. Organism',
-        'C. Organe',
-        'D. Celule',
-      ],
-      question: 'Care este nivelul de organizare care include celule?',
-      source_sentence: 1,
-    },
-    {
-      correct_index: 1,
-      explanation:
-        'Potrivit textului, exemple de sisteme cu funcțiile de nutriție sunt sistemul digestiv și sistemul circulator.',
-      options: [
-        'A. Sistem nervos, sistem endocrin',
-        'B. Digestiv, circulator, respirator, excretor',
-        'C. Sistem reproducător masculin și feminin',
-        'D. Sistem locomotor',
-      ],
-      question: 'Care sunt exemple de sisteme cu funcțiile de nutriție?',
-      source_sentence: 2,
-    },
-    {
-      correct_index: 1,
-      explanation: 'Potrivit textului, exemplu de organ este plămânul sau rinichiul.',
-      options: ['A. Sistem de organe', 'B. Organism', 'C. Organe', 'D. Celule'],
-      question: 'Care este nivelul de organizare care include plămâni și rinichi?',
-      source_sentence: 3,
-    },
-  ],
-}
+// fallback lesson data (used if the server is unreachable)
+const FALLBACK_LESSON_DATA = localLesson
 
 // import level images
 import activeImg from '../assets/levels/activelevel.png'
 import inactiveImg from '../assets/levels/inactivelevel.png'
 import lockedImg from '../assets/levels/unlockedlevel.png'
 
-export default function Lessons({ onBack = () => {} }) {
+export default function Lessons() {
   // We'll split questions into a fixed number of levels (configurable)
   const LEVEL_COUNT = 5
 
-  const questions = lessonData.questions || []
+  // state to manage selected module: null = show modules list; otherwise load that module
+  const [activeModule, setActiveModule] = useState(null)
+
+  // state for lesson data fetched from server
+  const [lesson, setLesson] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  // fetch lesson data from backend when a module is selected
+  useEffect(() => {
+    const moduleToLoad = activeModule
+    if (!moduleToLoad) return // don't load until user selects a module
+
+    // Immediately show local fallback so offline editing works while we try to fetch
+    setLesson(FALLBACK_LESSON_DATA)
+    setLoading(false)
+
+    // If query param offline=true OR explicit DEV flag, use local JSON immediately (useful for quick edits)
+    const params = new URLSearchParams(window.location.search)
+    const offlineParam = params.get('offline') === 'true'
+    const useLocalInDev = process.env.NODE_ENV === 'development' && true // change to false to disable
+
+    if (offlineParam || useLocalInDev) {
+      // already set fallback above; skip network fetch
+      return
+    }
+
+    const API = process.env.REACT_APP_API_URL || 'http://localhost:5000'
+    const controller = new AbortController()
+    const signal = controller.signal
+
+    async function load() {
+      setLoading(true)
+      setError(null)
+
+      // try a couple of common endpoint patterns used by backends
+      const tries = [
+        `${API}/api/lessons/${moduleToLoad}`,
+        `${API}/api/lesson/${moduleToLoad}`,
+        `${API}/lessons/${moduleToLoad}`,
+        `${API}/lesson/${moduleToLoad}`,
+      ]
+
+      let success = false
+      for (const url of tries) {
+        try {
+          const res = await fetch(url, { signal })
+          if (!res.ok) {
+            // try next
+            continue
+          }
+          const json = await res.json()
+          // basic validation: must have questions array
+          if (json && Array.isArray(json.questions)) {
+            setLesson(json)
+            success = true
+            break
+          }
+        } catch (e) {
+          if (e.name === 'AbortError') return
+          // continue to next URL
+        }
+      }
+
+      if (!success) {
+        setError('Nu am putut încărca lecția de pe server. Se folosește conținut local.')
+        // fallback already set above
+      }
+      setLoading(false)
+    }
+
+    load()
+    return () => controller.abort()
+  }, [activeModule])
+
+  // Use lesson questions if available, otherwise fall back to the local offline data so levels render reliably
+  const questions = (lesson && Array.isArray(lesson.questions) && lesson.questions.length > 0)
+    ? lesson.questions
+    : (FALLBACK_LESSON_DATA.questions || [])
 
   // split questions into LEVEL_COUNT chunks (last may be shorter)
   const levels = useMemo(() => {
@@ -89,11 +110,97 @@ export default function Lessons({ onBack = () => {} }) {
   // state: which level is unlocked (max index unlocked)
   const [unlockedLevel, setUnlockedLevel] = useState(0) // level 0 unlocked by default
   const [startedLevel, setStartedLevel] = useState(-1) // -1 means no level started
+  const [levelsVisible, setLevelsVisible] = useState(false)
 
   // per-level question navigation state (only relevant for startedLevel)
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
+
+  // measure top offset (height of the fixed menu) so the first node isn't hidden
+  const [topOffset, setTopOffset] = useState(84)
+
+  useEffect(() => {
+    function calc() {
+      try {
+        const el = document.querySelector('.restricted-menu') || document.querySelector('.menu-header')
+        const menuRect = el ? el.getBoundingClientRect() : { bottom: 0 }
+        // measure button height (if available)
+        const btn = document.querySelector('.level-btn')
+        const btnH = btn ? Math.ceil(btn.getBoundingClientRect().height) : 0
+
+        // desired padding (document pixels): menu bottom (viewport) + scrollY + button height + gap
+        const gap = 24
+        const desired = Math.ceil(menuRect.bottom + window.scrollY + btnH + gap)
+
+        // apply immediately
+        try {
+          document.documentElement.style.setProperty('--lessons-top-offset', `${desired}px`)
+          const root = document.querySelector('.lessons-root')
+          if (root) root.style.paddingTop = `${desired}px`
+        } catch (e) {}
+
+        // re-check using rAF to ensure layout applied; retry a couple of times if still overlapping
+        let attempts = 0
+        const check = () => {
+          attempts += 1
+          const firstNode = document.querySelector('.map-item .map-node')
+          const menuBottomNow = el ? el.getBoundingClientRect().bottom : 0
+          if (firstNode && menuBottomNow) {
+            const nodeTop = firstNode.getBoundingClientRect().top
+            const desiredGap = 18
+            const overlap = menuBottomNow + desiredGap - nodeTop
+            if (overlap > 0) {
+              const newPad = desired + overlap
+              try {
+                document.documentElement.style.setProperty('--lessons-top-offset', `${newPad}px`)
+                const root = document.querySelector('.lessons-root')
+                if (root) root.style.paddingTop = `${newPad}px`
+              } catch (e) {}
+              setTopOffset(newPad)
+              return
+            }
+          }
+          if (attempts < 3) requestAnimationFrame(check)
+          else setTopOffset(desired)
+        }
+        requestAnimationFrame(check)
+      } catch (e) {
+        const fallback = 320
+        setTopOffset(fallback)
+        try { document.documentElement.style.setProperty('--lessons-top-offset', `${fallback}px`) } catch (e) {}
+        const root = document.querySelector('.lessons-root')
+        if (root) root.style.paddingTop = `${fallback}px`
+      }
+    }
+    // run calc after a short timeout to allow initial layout to settle
+    const id = window.setTimeout(calc, 40)
+    window.addEventListener('resize', calc)
+    return () => { window.clearTimeout(id); window.removeEventListener('resize', calc) }
+  }, [activeModule, lesson])
+
+  // helper to select a module and immediately populate offline data so levels show instantly
+  function selectModule(id) {
+    // set active module and immediately populate offline lesson so levels render right away
+    setActiveModule(id)
+    setLesson(FALLBACK_LESSON_DATA)
+    setStartedLevel(-1)
+    setQIndex(0)
+    setUnlockedLevel(0)
+    setLoading(false)
+    setError(null)
+    // allow layout to adjust and force a recalculation of top offset
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // dispatch a resize event so the layout calc runs and paddings update
+      window.dispatchEvent(new Event('resize'))
+      // ensure the level map is scrolled into view (in case of menu overlap)
+      const el = document.querySelector('.level-map')
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      // mark levels visible
+      setLevelsVisible(true)
+    }, 80)
+  }
 
   // derived
   const currentLevelQuestions = startedLevel >= 0 ? levels[startedLevel] : []
@@ -159,37 +266,113 @@ export default function Lessons({ onBack = () => {} }) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  // Modules list - simple for now. Expand as you add more modules.
+  const modules = [
+    { id: '1', title: 'Biologie', subtitle: 'Modulul 1' },
+    // future modules: { id: '2', title: 'Matematică', icon: ... }
+  ]
+
+  // find active module metadata for header/title
+  const activeModuleMeta = modules.find((m) => m.id === activeModule) || null
+
+  // If no module selected, show modules list
+  if (!activeModule) {
+    return (
+      <div className="lessons-root modules-root">
+        <div className="lessons-header">
+          <h3>Alege modul</h3>
+        </div>
+        <div className="modules-grid">
+          {modules.map((m) => (
+            <div key={m.id} className="module-card">
+              <div className="module-title">{m.title}</div>
+              <button className="module-btn" onClick={() => selectModule(m.id)} aria-label={`Deschide modul ${m.title}`}>
+                <img src={inactiveImg} alt="" className="module-img default-img" />
+                <img src={activeImg} alt="" className="module-img active-img" />
+              </button>
+              <div className="module-sub">{m.subtitle}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{padding:'1rem', color:'var(--text, #e6eef8)'}}>
+          (Folosește vizualizarea locală offline; intră într-un modul pentru a vedea nivelele.)
+        </div>
+      </div>
+    )
+  }
+
+  // If module is selected but lesson data hasn't loaded yet, show a loader/message
+  if (!lesson) {
+    return (
+      <div className="lessons-root" style={{ paddingTop: `${topOffset}px` }}>
+        <div className="lessons-header">
+          <button className="back-to-modules" onClick={() => { setActiveModule(null); setLesson(null); setLevelsVisible(false) }}>&larr; Module</button>
+          <h3>{activeModuleMeta ? activeModuleMeta.title : `Module ${activeModule}`}</h3>
+        </div>
+        <div style={{ padding: '1.2rem', color: 'var(--text)' }}>
+          Încarcare lecție... (folosind modul offline dacă este disponibil)
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="lessons-root">
+    <div className="lessons-root" style={{ paddingTop: `${topOffset}px` }}>
       <div className="lessons-header">
-        <h3>
-          Module {lessonData.module} — Lecție {startedLevel >= 0 ? `${startedLevel + 1} · ${qIndex + 1}` : '-'}
-        </h3>
+        <button className="back-to-modules" onClick={() => { setActiveModule(null); setLesson(null); setStartedLevel(-1); setLevelsVisible(false) }}>&larr; Module</button>
+        <h3>{activeModuleMeta ? activeModuleMeta.title : `Module ${activeModule}`}</h3>
       </div>
 
+      {/* small info to confirm loaded data (helps debugging offline) */}
+      <div className="lesson-meta" style={{padding: '0.6rem 1rem', color: 'rgba(230,238,248,0.85)'}}>
+        Întrebări: {questions.length} — Nivele: {levels.length}
+      </div>
++
+      {loading && (
+        <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text, #e6eef8)' }}>
+          Încărcare lecție...
+        </div>
+      )}
+      {error && (
+        <div style={{ padding: '1rem', textAlign: 'center', color: 'salmon' }}>{error}</div>
+      )}
+
       {/* level strip - only show when not inside a started level */}
-      {startedLevel < 0 && (
-        <div className="level-strip" role="navigation" aria-label="Selectează nivel">
+      {levelsVisible && startedLevel < 0 && levels.length > 0 && (
+        // Changed layout: vertical "treasure map" style. visual only — same behavior.
+        <div className="level-map" role="navigation" aria-label="Selectează nivel">
           {levels.map((lvl, i) => {
             const isLocked = i > unlockedLevel || lvl.length === 0
             const isActive = i === startedLevel
             return (
-              <button
-                type="button"
-                key={i}
-                className={"level-btn" + (isLocked ? ' locked' : '') + (isActive ? ' active' : '')}
-                onClick={() => startLevel(i)}
-                disabled={isLocked}
-                aria-current={isActive ? 'true' : 'false'}
-              >
-                {/* level images: default, active (hover/active), and locked */}
-                <img src={inactiveImg} alt="" aria-hidden="true" className="lvl-img default-img" />
-                <img src={activeImg} alt="" aria-hidden="true" className="lvl-img active-img" />
-                <img src={lockedImg} alt="" aria-hidden="true" className="lvl-img locked-img" />
+              <div key={i} className="map-item">
+                <div className={"map-node" + (isLocked ? ' locked' : '') + (isActive ? ' active' : '')}>
+                  <button
+                    type="button"
+                    className={"level-btn" + (isLocked ? ' locked' : '') + (isActive ? ' active' : '')}
+                    onClick={() => startLevel(i)}
+                    disabled={isLocked}
+                    aria-current={isActive ? 'true' : 'false'}
+                  >
+                    {/* level images: default, active (hover/active), and locked */}
+                    <img src={inactiveImg} alt="" aria-hidden="true" className="lvl-img default-img" />
+                    <img src={activeImg} alt="" aria-hidden="true" className="lvl-img active-img" />
+                    <img src={lockedImg} alt="" aria-hidden="true" className="lvl-img locked-img" />
 
-                {/* accessibility label for screen readers */}
-                <span className="visually-hidden">Nivel {i + 1}</span>
-              </button>
+                    {/* accessibility label for screen readers */}
+                    <span className="visually-hidden">Nivel {i + 1}</span>
+                  </button>
+                </div>
+
+                {/* connector between nodes - a vertical line with small dots */}
+                {i < levels.length - 1 && (
+                  <div className="connector" aria-hidden="true">
+                    <span className="conn-dot top" />
+                    <span className="conn-line" />
+                    <span className="conn-dot bottom" />
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>

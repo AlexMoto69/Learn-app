@@ -1,12 +1,17 @@
 /* add to `learn-app/src/pages/Lessons.css` */
-.lessons-root { box-sizing: border-box; padding: 1rem; --bg: #0f0b16; --card: #12101a; --accent: linear-gradient(135deg,#ff4dcb,#3ab7ff); --text: #e6eef8 }
+:root {
+  /* safe default for the lessons top-offset so CSS doesn't see it as undefined before JS runs */
+  --lessons-top-offset: calc(var(--menu-h, 84px) + 12px);
+}
+
+.lessons-root { box-sizing: border-box; padding: 30px; --bg: #0f0b16; --card: #12101a; --accent: linear-gradient(135deg,#ff4dcb,#3ab7ff); --text: #e6eef8 }
 
 /* header layout: keep back button fixed and make title truncatable */
 .lessons-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 6px;
+    gap: 6px;
+    padding: 6px 6px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -19,28 +24,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     color: var(--text);
-}
-
-/* progress dots: fixed size so numbers / labels don't stretch the container */
-.progress-dots {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 8px 12px;
-    box-sizing: border-box;
-}
-.progress-dots .dot {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    box-sizing: border-box;
 }
 
 /* level strip */
@@ -89,7 +72,7 @@
 .level-btn:hover .active-img {
     opacity: 1;
     transform: scale(1.02);
-    filter: drop-shadow(0 6px 16px rgba(58,183,255,0.18)) drop-shadow(0 2px 6px rgba(255,77,203,0.06));
+    filter: drop-shadow(0 6px 10px rgba(58,183,255,0.18)) drop-shadow(0 2px 6px rgba(255,77,203,0.06));
 }
 
 .level-btn.active .default-img { opacity: 0; }
@@ -106,9 +89,9 @@
 
 /* lesson card */
 .lesson-card {
-    margin-top: 1.2rem;
+    margin-top: 0.2rem;
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    padding: 1rem;
+    padding: 0.2rem;
     border-radius: 12px;
     box-shadow: 0 6px 30px rgba(3,6,15,0.6);
     color: var(--text);
@@ -156,58 +139,149 @@
     .level-btn { --size: calc(min(10vw, 72px)); }
 }
 
-/* utility */
-.visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap }
-
-/* preserve earlier rules (if present in original file) */
-/* header layout: keep back button fixed and make title truncatable */
-.lessons-header {
+/* New: vertical "treasure map" layout for levels */
+.level-map {
+    --map-gap: clamp(1rem, 6vw, 3.2rem);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: var(--map-gap);
+    box-sizing: border-box;
     width: 100%;
-    box-sizing: border-box;
-}
-.lessons-header .back { flex: 0 0 auto; }
-.lessons-header h3 {
-    flex: 1 1 auto;
-    min-width: 0; /* needed for text-overflow inside flex */
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    position: relative;
+    /* use the value set by JS in :root if available */
+    padding-top: var(--lessons-top-offset, calc(var(--menu-h,84px) + 12px));
+    padding-bottom: 1rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
 }
 
-/* progress dots: fixed size so numbers / labels don't stretch the container */
-.progress-dots {
+.map-item {
+    /* stack node then connector vertically so connectors sit between nodes */
     display: flex;
-    gap: 8px;
+    flex-direction: column;
     align-items: center;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    padding: 8px 12px;
-    box-sizing: border-box;
+    gap: 8px;
+    width: 100%;
+    justify-content: flex-start; /* nodes at top of item */
+    position: relative;
 }
-.progress-dots .dot {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    border-radius: 50%;
-    display: inline-flex;
+
+/* stagger every other node to create a treasure-map path */
+.map-item:nth-child(odd) .map-node { transform: translateX(-14%); }
+.map-item:nth-child(even) .map-node { transform: translateX(14%); }
+
+.map-node {
+    transition: transform .28s cubic-bezier(.2,.9,.15,1), box-shadow .18s ease;
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
-    box-sizing: border-box;
+    position: relative;
+    z-index: 50; /* keep nodes above connector and page content so they're clickable */
 }
 
-/* ensure lesson content doesn't push the header/menu size */
-.lesson-card { box-sizing: border-box; }
+/* connector: a vertical set of small dots and a thin line between nodes */
+.connector {
+    width: 36px; /* relative small connector width */
+    display:flex;
+    flex-direction: column;
+    align-items:center;
+    gap:6px;
+    flex: 0 0 auto;
+    z-index: 10; /* below the node */
+}
 
-/* overlay/side menu safety (if you have a sliding menu) */
-.menu, .side-menu {
-    max-width: 320px;
-    width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
+/* ensure connectors are responsive and shrink on small screens */
+@media (max-width: 600px){
+    .connector { width: 22px }
+    .conn-dot { width:6px; height:6px }
+}
+
+/* keep existing level-btn sizes but make them scale with variables */
+.level-btn { --size: 6.2rem; }
+
+/* remove numeric text if present */
+.level-btn .visually-hidden { position: absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap }
+
+/* when node is active, lift it slightly and show glow */
+.map-node .level-btn:hover, .map-node .level-btn.active {
+    transform: scale(1.04);
+}
+
+.map-node .level-btn:hover .active-img, .map-node .level-btn.active .active-img {
+    opacity: 1;
+    transform: scale(1.06);
+    filter: drop-shadow(0 10px 18px rgba(58,183,255,0.16)) drop-shadow(0 3px 8px rgba(255,77,203,0.06));
+}
+
+/* locked appearance remains the same */
+.map-node .level-btn.locked .locked-img { opacity: 1 }
+
+/* keep lesson card spacing below the map */
+.lessons-root > .lesson-card { margin-top: 2rem }
+
+/* Modules list styling */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  align-items: start;
+  padding: 0.5rem;
+}
+
+.module-card {
+  background: transparent;
+  border-radius: 12px;
+  padding: 0.6rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+
+.module-title {
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 2px;
+  color: var(--text);
+}
+
+.module-sub {
+  font-size: 0.85rem;
+  color: rgba(230,238,248,0.75);
+}
+
+.module-btn {
+  --size: 6.4rem;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  position: relative;
+  cursor: pointer;
+  transition: transform .18s ease;
+}
+
+.module-img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+  transition: opacity .18s ease, transform .18s ease, filter .18s ease;
+}
+
+.module-img.default-img { opacity: 1 }
+.module-img.active-img { opacity: 0 }
+
+.module-btn:hover .default-img { opacity: 0 }
+.module-btn:hover .active-img { opacity: 1; transform: scale(1.04); filter: drop-shadow(0 8px 18px rgba(58,183,255,0.14)); }
+
+/* ensure module button scales nicely on small screens */
+@media (max-width: 600px){
+  .module-btn { --size: calc(min(20vw, 68px)); }
 }

@@ -14,7 +14,7 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 /* Main menu styles matching the cyberpunk theme */
 .main-root{
   /* inherit login background exactly */
-  --header-v: clamp(0.5rem, 1.2vw, 0.9rem); /* header vertical padding */
+  --header-v: clamp(0.3rem, 1.2vw, 0.9rem); /* header vertical padding */
   --logo-h: clamp(36px, 6vw, 84px); /* logo height used to compute header space */
   --menu-max: 1100px; /* explicit cap for menu width — change this to restrict the bar */
   --menu-h: clamp(64px, 8vw, 84px); /* fixed visual height for the menu bar */
@@ -104,7 +104,7 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
     padding: 0 clamp(0.6rem, 2vw, 1.2rem); /* vertical padding removed to keep constant height */
     box-sizing: border-box;
 
-    background: rgba(6,8,12,0.98);
+    background: rgba(5, 5, 5, 0.99);
     border-radius: 10px;
     box-shadow: 0 6px 20px rgba(0,0,0,0.5);
     z-index: 2000; /* above everything */
@@ -157,8 +157,8 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 }
 
 .nav-icon{
-    width: 100%;
-    height: 100%;
+    width: 80%;
+    height: 80%;
     object-fit: contain;
     transition: transform .18s ease, filter .18s ease;
 }
