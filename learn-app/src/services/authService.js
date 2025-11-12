@@ -1,5 +1,14 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000';
 
+function getAccessToken() { try { return localStorage.getItem('access_token'); } catch { return null } }
+function getRefreshToken() { try { return localStorage.getItem('refresh_token'); } catch { return null } }
+function setTokens({ access, refresh }) {
+  try {
+    if (access) localStorage.setItem('access_token', access);
+    if (refresh) localStorage.setItem('refresh_token', refresh);
+  } catch { /* ignore storage errors */ }
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, options);
   const text = await res.text();
@@ -25,11 +34,16 @@ export async function login({ identifier, email, username, password }) {
 
   payload.password = password;
 
-  return request('/auth/login', {
+  const data = await request('/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
+  // store tokens if present
+  if (data?.access_token || data?.refresh_token) {
+    setTokens({ access: data.access_token, refresh: data.refresh_token });
+  }
+  return data;
 }
 
 export async function register({ username, email, password }) {
@@ -41,31 +55,106 @@ export async function register({ username, email, password }) {
   });
 }
 
+export async function refreshAccessToken() {
+  const refresh = getRefreshToken();
+  if (!refresh) {
+    const e = new Error('No refresh token');
+    e.status = 401;
+    throw e;
+  }
+  const data = await request('/auth/refresh', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${refresh}` },
+  });
+  if (data?.access_token || data?.refresh_token) {
+    setTokens({ access: data.access_token, refresh: data.refresh_token });
+  }
+  return data?.access_token;
+}
+
 export async function verifyToken(token) {
-  if (!token) throw new Error('No token provided');
+  const access = token || getAccessToken();
+  if (!access) throw new Error('No token provided');
   return request('/auth/profile', {
     method: 'GET',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${access}` }
   });
 }
 
 export async function getProfile(token) {
-  return verifyToken(token);
+  const access = token || getAccessToken();
+  try {
+    return await request('/auth/profile', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${access}` }
+    });
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return request('/auth/profile', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${access2}` }
+      });
+    }
+    throw e;
+  }
 }
 
 export async function updateProfile(body, token) {
-  if (!token) throw new Error('No token provided');
-  return request('/auth/profile', {
+  const doPost = async (access) => request('/auth/profile', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${access}`,
     },
     body: JSON.stringify(body || {}),
   });
+  const access = token || getAccessToken();
+  try {
+    return await doPost(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doPost(access2);
+    }
+    throw e;
+  }
 }
 
 export function logout() {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('user');
+  try {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+  } catch { /* ignore storage errors */ }
+}
+
+export async function sendChat({ prompt, module, history, max_context_chars } = {}) {
+  const body = { prompt, module, history, max_context_chars };
+  const doPost = async (access) => request('/api/chatbot/respond', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${access}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const access = getAccessToken();
+  if (!access) {
+    const e = new Error('Not authenticated');
+    e.status = 401;
+    throw e;
+  }
+  try {
+    return await doPost(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doPost(access2);
+    }
+    throw e;
+  }
 }

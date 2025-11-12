@@ -20,6 +20,7 @@ def register():
     return jsonify({"message": "User registered successfully"})
 
 from flask_jwt_extended import create_access_token
+from routes.auth_refresh import create_refresh_token
 
 @auth.route("/login", methods=["POST"])
 def login():
@@ -49,11 +50,16 @@ def login():
         }), 401
 
     token = create_access_token(identity=str(user.id))
+    try:
+        refresh = create_refresh_token(user.id)
+    except Exception:
+        refresh = None
 
     return jsonify({
         "success": True,
         "message": "Login successful",
         "access_token": token,
+        "refresh_token": refresh,
         "user": {
             "id": user.id,
             "username": user.username,

@@ -15,6 +15,10 @@ def create_app():
     from routes.auth_routes import auth
     app.register_blueprint(auth, url_prefix="/auth")
 
+    # register refresh blueprint
+    from routes.auth_refresh import refresh_bp
+    app.register_blueprint(refresh_bp)
+
     # register quiz blueprint
     from routes.quiz_routes import quiz as quiz_bp
     app.register_blueprint(quiz_bp, url_prefix="/api/quiz")

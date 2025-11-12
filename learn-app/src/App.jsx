@@ -16,8 +16,8 @@ function Placeholder({ title, onBack }) {
   )
 }
 
-export default function App(){
-  const [screen, setScreen] = useState('menu') // menu | lessons | daily | chatbot | friends
+export default function App({ initialScreen = 'lessons' }){
+  const [screen, setScreen] = useState(initialScreen) // menu | lessons | daily | chatbot | friends | profile | upload
 
   function handleNavigate(to){
     setScreen(to === 'menu' ? 'menu' : to)

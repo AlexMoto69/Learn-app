@@ -22,9 +22,11 @@ export default function Login({ onLogin, onRegisterClick }) {
             const data = await apiLogin({ identifier: identifier.trim(), password });
 
             const token = data.access_token || data.token || data.accessToken;
+            const refresh = data.refresh_token || data.refreshToken;
             const user = data.user || null;
 
             if (token) localStorage.setItem('access_token', token);
+            if (refresh) localStorage.setItem('refresh_token', refresh);
             if (user) localStorage.setItem('user', JSON.stringify(user));
 
             if (onLogin) onLogin({ token, user, raw: data });

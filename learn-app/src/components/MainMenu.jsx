@@ -8,8 +8,10 @@ import friendsIcon from '../assets/icons/friends.svg'
 import appLogo from '../assets/logo2.png'
 import profileIcon from '../assets/icons/profile.svg'
 import uploadIcon from '../assets/icons/upload.svg'
+import logoutIcon from '../assets/icons/logout.svg'
+import { logout } from '../services/authService'
+
 export default function MainMenu({ onNavigate = () => {} }){
-    // menu is always visible and constant — no scroll listeners
     const visible = true;
 
     const menuInner = (
@@ -44,6 +46,12 @@ export default function MainMenu({ onNavigate = () => {} }){
                     <span className="nav-icon-wrap"><img src={uploadIcon} className="nav-icon" alt="Upload" /></span>
                     <span className="nav-label">Upload</span>
                 </button>
+
+                {/* Visible logout icon */}
+                <button className="nav-item" onClick={() => { logout(); window.location.reload(); }}>
+                    <span className="nav-icon-wrap"><img src={logoutIcon} className="nav-icon" alt="Log out" /></span>
+                    <span className="nav-label">Log out</span>
+                </button>
             </nav>
 
             <div className="app-logo-wrap">
@@ -54,18 +62,16 @@ export default function MainMenu({ onNavigate = () => {} }){
 
     return (
         <div className="main-root">
-            {/* transparent header for accessibility / layout fallback */}
             <header className="menu-header" aria-hidden="true">
                 <div className="menu-inner" style={{visibility: 'hidden'}}></div>
             </header>
 
-            {/* always-visible fixed restricted menu */}
             <div className={`restricted-menu ${visible ? 'menu-visible' : ''}`}>
                 {menuInner}
             </div>
 
             <div className="main-card">
-                <div className="menu-body">{/* main content here */}</div>
+                <div className="menu-body"></div>
             </div>
         </div>
     );

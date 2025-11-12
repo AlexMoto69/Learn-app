@@ -7,46 +7,87 @@ export default function Profile({ onBack = () => {} }) {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
   const [editing, setEditing] = useState(false)
+  const [canEdit, setCanEdit] = useState(false)
 
   // editable fields
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
 
-  // Fetch profile from backend
+  // Fetch profile from backend (fallback to cached user if token missing/expired)
   async function fetchProfile() {
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setInfo('')
     try {
       const token = localStorage.getItem('access_token')
-      if (!token) { setError('Not authenticated. Please log in.'); setLoading(false); return }
+      if (!token) {
+        // fallback to cached user for viewing
+        const cached = (() => { try { return JSON.parse(localStorage.getItem('user')) } catch { return null } })()
+        if (cached) {
+          setProfile(cached)
+          setUsername(cached.username || '')
+          setEmail(cached.email || '')
+          setInfo('Viewing cached profile (not signed in)')
+          setCanEdit(false)
+        } else {
+          setError('Not authenticated. Please log in.')
+          setCanEdit(false)
+        }
+        return
+      }
       const data = await getProfile(token)
       setProfile(data)
       setUsername(data.username || '')
       setEmail(data.email || '')
+      setCanEdit(true)
     } catch (e) {
-      setError(e?.message || 'Failed to load profile')
+      // if unauthorized, show cached profile instead of blocking the page
+      const status = e?.status || e?.data?.status
+      if (status === 401) {
+        const cached = (() => { try { return JSON.parse(localStorage.getItem('user')) } catch { return null } })()
+        if (cached) {
+          setProfile(cached)
+          setUsername(cached.username || '')
+          setEmail(cached.email || '')
+          setInfo('Session expired. Showing cached profile')
+          setCanEdit(false)
+        } else {
+          setError('Session expired. Please log in again.')
+          setCanEdit(false)
+        }
+      } else {
+        setError(e?.message || 'Failed to load profile')
+      }
     } finally { setLoading(false) }
   }
 
   useEffect(() => { fetchProfile() }, [])
 
   async function saveProfile() {
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setInfo('')
     try {
       const token = localStorage.getItem('access_token')
+      if (!token) {
+        setInfo('Cannot save while not signed in. Showing cached profile')
+        return
+      }
       const body = { username, email }
       const res = await updateProfile(body, token)
-      // server returns { msg, updated, user }
       if (res?.user) {
         setProfile(res.user)
-        // sync local user cache if present
         try { localStorage.setItem('user', JSON.stringify(res.user)) } catch { /* ignore quota */ }
       }
       setEditing(false)
-      // automatically refresh from server to ensure latest computed fields
       await fetchProfile()
     } catch (e) {
-      setError(e?.message || 'Failed to save profile')
+      if (e?.status === 401) {
+        setInfo('Session expired. Changes not saved. Showing cached profile')
+        setCanEdit(false)
+        setEditing(false)
+        await fetchProfile()
+      } else {
+        setError(e?.message || 'Failed to save profile')
+      }
     } finally { setLoading(false) }
   }
 
@@ -73,9 +114,8 @@ export default function Profile({ onBack = () => {} }) {
             <div className="profile-email">{profile?.email || email || '—'}</div>
           </div>
 
-          {error && (
-            <div className="profile-error" role="alert">{error}</div>
-          )}
+          {info && <div className="profile-infoBanner" role="status">{info}</div>}
+          {error && <div className="profile-error" role="alert">{error}</div>}
 
           <div className="profile-stats">
             <div className="stat stat--score">
@@ -116,8 +156,7 @@ export default function Profile({ onBack = () => {} }) {
 
           {!editing ? (
             <div className="profile-actions">
-              <button className="btn" onClick={() => setEditing(true)} disabled={loading}>Edit</button>
-              {/* Removed manual Refresh button; data refreshes on mount and after save */}
+              <button className="btn" onClick={() => canEdit && setEditing(true)} disabled={loading || !canEdit}>Edit</button>
             </div>
           ) : (
             <div className="profile-edit">
@@ -130,7 +169,7 @@ export default function Profile({ onBack = () => {} }) {
                 <input value={email} onChange={(e) => setEmail(e.target.value)} />
               </label>
               <div className="profile-edit-actions">
-                <button className="btn" onClick={saveProfile} disabled={loading}>Save</button>
+                <button className="btn" onClick={saveProfile} disabled={loading || !canEdit}>Save</button>
                 <button className="btn ghost" onClick={() => setEditing(false)}>Cancel</button>
               </div>
             </div>

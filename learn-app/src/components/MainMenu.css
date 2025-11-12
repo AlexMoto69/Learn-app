@@ -242,3 +242,10 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
   object-fit: contain;
   display: block;
 }
+
+.menu-footer{margin-top:12px; display:flex; justify-content:center}
+.nav-item.danger{background:#ef4444;color:#fff;border:none}
+.nav-item.danger:hover{filter:brightness(1.05)}
+
+/* ensure emoji icon is visually aligned and sized like other icons */
+.emoji-icon{ display:inline-grid; place-items:center; width: 1.4em; height: 1.4em; font-size: 1.2rem }

@@ -12,7 +12,6 @@ function RootApp({ initialPage = 'login' }) {
   const goToRegister = () => setPage('register')
   const goToLogin = () => setPage('login')
   const onLoginSuccess = (data) => {
-    // You can store auth data here, then switch to the main app
     console.log('Logged in, mounting App...', data)
     setPage('app')
   }
@@ -25,11 +24,10 @@ function RootApp({ initialPage = 'login' }) {
     return <Register onSignIn={goToLogin} />
   }
 
-  return <App />
+  return <App initialScreen="lessons" />
 }
 
 function Boot() {
-  // dev skip flag: either ?dev=1 in URL or localStorage.dev_skip_login === '1'
   const params = new URLSearchParams(window.location.search)
   const devSkip = params.get('dev') === '1' || localStorage.getItem('dev_skip_login') === '1'
   const [showSplash, setShowSplash] = useState(!devSkip)
