@@ -1,5 +1,5 @@
 /* basic chat UI */
-.chatbot-root{ max-width:800px; margin: 0 auto; padding: 0.7rem; color: var(--text, #e6eef8) }
+.chatbot-root{ max-width:800px; margin: 0 auto; padding: calc(var(--menu-h, 10px)) 0.7rem 0.7rem; color: var(--text, #e6eef8) }
 .chatbot-header{ display:flex; align-items:center; gap:12px; margin-bottom:8px }
 .chatbot-header .back{ background:transparent; border:0; color:var(--text); font-size:1.1rem }
 
@@ -17,4 +17,3 @@
 .chatbot-input button{ padding:10px 16px; border-radius:10px; border:0; background:linear-gradient(90deg,#3ab7ff,#ff4dcb); color:#071226 }
 
 @media (max-width:800px){ .chatbot-body{ height:60vh } .bubble{ max-width:92% } .chatbot-root{ padding:0.6rem } }
-

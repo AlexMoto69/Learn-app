@@ -46,6 +46,8 @@ html, body {
     padding: 0;
     background: transparent;
     box-shadow: none;
+    /* ensure the login form is vertically centered on the full viewport when shown */
+    min-height: 100vh;
 }
 
 /* Card: fluid width, padding and radius */

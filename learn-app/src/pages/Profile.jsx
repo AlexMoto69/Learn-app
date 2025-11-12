@@ -3,7 +3,7 @@ import './Profile.css'
 import logo from '../assets/logo2.png'
 import { getProfile, updateProfile } from '../services/authService'
 
-export default function Profile({ onBack = () => {} }) {
+export default function Profile() {
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -103,8 +103,6 @@ export default function Profile({ onBack = () => {} }) {
 
   return (
     <div className="profile-root">
-      <button className="back" onClick={onBack}>⬅ Back</button>
-
       <div className="profile-card">
         <img src={logo} alt="avatar" className="profile-avatar" />
 

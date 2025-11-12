@@ -1,10 +1,12 @@
 /* add to `learn-app/src/pages/Lessons.css` */
 :root {
   /* safe default for the lessons top-offset so CSS doesn't see it as undefined before JS runs */
-  --lessons-top-offset: calc(var(--menu-h, 84px) + 12px);
+  --app-header-height: var(--menu-h, 84px);
+  /* subtract a slightly larger amount to lift lessons content closer to the header */
+  --lessons-top-offset: calc(var(--app-header-height) - 20px);
 }
 
-.lessons-root { box-sizing: border-box; padding: 30px; --bg: #0f0b16; --card: #12101a; --accent: linear-gradient(135deg,#ff4dcb,#3ab7ff); --text: #e6eef8 }
+.lessons-root { box-sizing: border-box; padding: 10px; padding-top: var(--lessons-top-offset); --bg: #0f0b16; --card: #12101a; --accent: linear-gradient(135deg,#ff4dcb,#3ab7ff); --text: #e6eef8 }
 
 /* header layout: keep back button fixed and make title truncatable */
 .lessons-header {
@@ -16,6 +18,14 @@
     box-sizing: border-box;
 }
 .lessons-header .back { flex: 0 0 auto; }
+.lessons-header .back-to-modules{
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+  padding: 4px 6px;
+}
 .lessons-header h3 {
     flex: 1 1 auto;
     min-width: 0; /* needed for text-overflow inside flex */
@@ -150,10 +160,11 @@
     width: 100%;
     position: relative;
     /* use the value set by JS in :root if available */
-    padding-top: var(--lessons-top-offset, calc(var(--menu-h,84px) + 12px));
+    padding-top: 0;
     padding-bottom: 1rem;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
+    margin-top: .25rem;
 }
 
 .map-item {
@@ -281,7 +292,26 @@
 .module-btn:hover .default-img { opacity: 0 }
 .module-btn:hover .active-img { opacity: 1; transform: scale(1.04); filter: drop-shadow(0 8px 18px rgba(58,183,255,0.14)); }
 
-/* ensure module button scales nicely on small screens */
-@media (max-width: 600px){
-  .module-btn { --size: calc(min(20vw, 68px)); }
+/* Ensure modules top view is offset below the fixed menu (reduced extra gap) */
+.modules-root{ padding-top: calc(var(--app-header-height, 84px) - 20px) }
+
+/* move top padding to the root lessons container so both modules list and in-module views get consistent offset below the fixed menu */
+.lessons-root{ /* keep legacy override but use the unified header variable */ padding-top: calc(var(--app-header-height, 84px) - 20px) }
+
+/* Make elements that can be scrolled into view leave space for the fixed header */
+.level-map,
+.lesson-card,
+.lessons-header,
+.modules-grid,
+.module-card,
+.module-btn {
+  scroll-margin-top: calc(var(--app-header-height, 84px) + 8px);
 }
+
+/* Loading panel styles */
+.loading-panel{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.8rem; padding:1.2rem; min-height:40vh }
+.loading-text{ color: var(--text); opacity:.9; text-align:center }
+.elapsed{ margin-top:.25rem; font-size:.9rem; color: rgba(230,238,248,0.7) }
+.cancel-btn{ margin-top:.5rem; padding:.5rem .8rem; border-radius:8px; border:0; background:linear-gradient(90deg,#2b2b3a,#1b1a24); color:var(--text); cursor:pointer }
+.spinner{ width:38px; height:38px; border:3px solid rgba(255,255,255,.18); border-top-color:#3ab7ff; border-radius:50%; animation:spin 1s linear infinite }
+@keyframes spin{ to{ transform: rotate(360deg) } }

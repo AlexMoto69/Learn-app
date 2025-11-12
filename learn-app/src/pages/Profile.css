@@ -1,4 +1,4 @@
-.profile-root{padding:1rem 1.2rem;color:var(--text,#e6eef8)}
+.profile-root{padding:calc(var(--menu-h, 84px) + 18px) 1.2rem 1.2rem;color:var(--text,#e6eef8)}
 .profile-root .back{background:transparent;border:none;color:var(--text);font-size:1rem;margin-bottom:1rem;cursor:pointer}
 .profile-card{display:grid;grid-template-columns:120px 1fr;align-items:center;max-width:900px;margin:0 auto;padding:1.2rem;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.08));box-shadow:0 4px 22px rgba(0,0,0,0.45)}
 @media(max-width:640px){.profile-card{grid-template-columns:1fr;align-items:center}}

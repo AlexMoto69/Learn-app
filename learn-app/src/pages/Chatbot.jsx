@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import './Chatbot.css'
 import { sendChat } from '../services/authService'
 
-export default function Chatbot({ onBack = () => {} }){
+export default function Chatbot(){
   const [messages, setMessages] = useState([
     { from: 'bot', text: 'Salut! Sunt asistentul tău. Pune o întrebare despre lecție.' }
   ])
@@ -48,7 +48,6 @@ export default function Chatbot({ onBack = () => {} }){
   return (
     <div className="chatbot-root">
       <div className="chatbot-header">
-        <button className="back" onClick={() => onBack()}>⬅</button>
         <h3>Chatbot</h3>
       </div>
 

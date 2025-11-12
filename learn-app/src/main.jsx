@@ -47,4 +47,25 @@ createRoot(document.getElementById('root')).render(
     <Boot />
   </StrictMode>,
 )
+
+// dynamically measure the visible header/menu height and expose it to CSS via --app-header-height
+function setAppHeaderHeight() {
+  try {
+    // prefer the fixed centered bar if present
+    const header = document.querySelector('.restricted-menu') || document.querySelector('.menu-header')
+    if (header instanceof HTMLElement) {
+      const h = header.offsetHeight || header.getBoundingClientRect().height || 0
+      document.documentElement.style.setProperty('--app-header-height', `${Math.round(h)}px`)
+      return h
+    }
+  } catch (e) {
+    // ignore errors
+  }
+  return null
+}
+
+// run shortly after mount
+setTimeout(() => setAppHeaderHeight(), 120)
+window.addEventListener('resize', () => setAppHeaderHeight())
+
 export default Boot

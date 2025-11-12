@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react'
 import './Upload.css'
 
-export default function Upload({ onBack = () => {} }) {
+export default function Upload() {
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
   const [uploading, setUploading] = useState(false)
@@ -72,8 +72,6 @@ export default function Upload({ onBack = () => {} }) {
 
   return (
     <div className="upload-root">
-      <button className="back" onClick={onBack}>⬅ Back</button>
-
       <div className="upload-card">
         <h2>Upload document</h2>
 

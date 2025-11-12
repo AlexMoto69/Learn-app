@@ -158,3 +158,41 @@ export async function sendChat({ prompt, module, history, max_context_chars } = 
     throw e;
   }
 }
+
+export async function getModuleQuiz(moduleNumber, opts = {}) {
+  const mod = String(moduleNumber || '').trim();
+  if (!mod) throw new Error('Module number required');
+  const { signal } = opts;
+  return request('/api/quiz/biolaureat', {
+    method: 'GET',
+    headers: { 'X-Module': mod },
+    signal,
+  });
+}
+
+export async function submitQuiz(payload) {
+  const doPost = async (access) => request('/api/quiz/submit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${access}`,
+    },
+    body: JSON.stringify(payload || {}),
+  });
+  const access = getAccessToken();
+  if (!access) {
+    // allow caller to handle unauthenticated state
+    const e = new Error('Not authenticated');
+    e.status = 401; throw e;
+  }
+  try {
+    return await doPost(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doPost(access2);
+    }
+    throw e;
+  }
+}
