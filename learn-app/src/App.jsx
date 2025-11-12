@@ -1,35 +1,37 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import React, { useState } from 'react'
+import MainMenu from './components/MainMenu'
 import './App.css'
+import Lessons from './pages/Lessons'
+import Chatbot from './pages/Chatbot'
+import Profile from './pages/Profile'
+import Upload from './pages/Upload'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+function Placeholder({ title, onBack }) {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="placeholder-root">
+      <button className="back" onClick={() => onBack && onBack()}>⬅ Back</button>
+      <h2>{title}</h2>
+      <div className="placeholder-body">Content for {title} will go here.</div>
+    </div>
   )
 }
 
-export default App
+export default function App(){
+  const [screen, setScreen] = useState('menu') // menu | lessons | daily | chatbot | friends
+
+  function handleNavigate(to){
+    setScreen(to === 'menu' ? 'menu' : to)
+  }
+
+  return (
+    <div className="app-root">
+      <MainMenu onNavigate={handleNavigate} />
+      {screen === 'lessons' && <Lessons onBack={()=>handleNavigate('menu')} />}
+      {screen === 'daily' && <Placeholder title="Daily Challenge" onBack={()=>handleNavigate('menu')} />}
+      {screen === 'chatbot' && <Chatbot onBack={()=>handleNavigate('menu')} />}
+      {screen === 'friends' && <Placeholder title="Friends" onBack={()=>handleNavigate('menu')} />}
+      {screen === 'profile' && <Profile onBack={()=>handleNavigate('menu')} />}
+      {screen === 'upload' && <Upload onBack={()=>handleNavigate('menu')} />}
+    </div>
+  )
+}

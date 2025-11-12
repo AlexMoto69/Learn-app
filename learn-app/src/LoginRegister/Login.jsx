@@ -1,3 +1,4 @@
+// javascript
 import React, { useState } from 'react';
 import './LoginRegister.css';
 
@@ -15,14 +16,44 @@ export default function Login({ onLogin, onRegisterClick }) {
             return;
         }
         setLoading(true);
+
         try {
+            // If parent provided an onLogin handler, prefer it (e.g. for centralized auth)
             if (onLogin) {
                 await onLogin({ identifier: identifier.trim(), password });
-            } else {
-                console.log('login', { identifier: identifier.trim(), password });
+                return;
             }
+
+            // Otherwise send JSON to backend Flask endpoint
+            const res = await fetch('http://localhost:5000/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                // include cookies if your Flask session/auth relies on them
+                credentials: 'include', // remove if not needed
+                body: JSON.stringify({
+                    identifier: identifier.trim(),
+                    password
+                })
+            });
+
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(data.message || data.error || 'Login failed.');
+                return;
+            }
+
+            // success: data may contain token/user
+            console.log('Login success:', data);
+            // Optionally call onLogin with server result if you want parent to know
+            if (onLogin) onLogin(data);
+            // clear sensitive fields
+            setPassword('');
         } catch (err) {
-            setError(err?.message || 'Login failed');
+            setError(err?.message || 'Network error. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -76,6 +107,17 @@ export default function Login({ onLogin, onRegisterClick }) {
                         Create one
                     </button>
                 </div>
+                {/* Dev helper: quickly skip login and show main menu (only visible with ?dev=1 or in dev build) */}
+                { (new URLSearchParams(window.location.search).get('dev') === '1') && (
+                    <div style={{ marginTop: '8px', textAlign: 'center' }}>
+                        <button type="button" className="submit" onClick={() => {
+                            // set local flag and call onLogin to navigate to app
+                            localStorage.setItem('dev_skip_login', '1')
+                            if (onLogin) onLogin({ dev: true })
+                            else window.location.reload()
+                        }}>Dev: Skip to menu</button>
+                    </div>
+                )}
             </form>
         </div>
     );

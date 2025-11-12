@@ -1,10 +1,9 @@
-// JavaScript
-// File: `learn-app/src/LoginRegister/Register.jsx`
-
+// javascript
+// File: learn-app/src/LoginRegister/Register.jsx
 import React, { useState } from 'react';
 import './LoginRegister.css';
 
-export default function Register() {
+export default function Register({ onSignIn }) {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -12,7 +11,11 @@ export default function Register() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    function handleSubmit(e) {
+    function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    async function handleSubmit(e) {
         e.preventDefault();
         setError('');
 
@@ -20,6 +23,12 @@ export default function Register() {
             setError('Please fill out all fields.');
             return;
         }
+
+        if (!isValidEmail(email.trim())) {
+            setError('Please enter a valid email address.');
+            return;
+        }
+
         if (password.length < 6) {
             setError('Password must be at least 6 characters.');
             return;
@@ -30,12 +39,45 @@ export default function Register() {
         }
 
         setLoading(true);
-        // Replace with real register call
-        setTimeout(() => {
+
+        const payload = {
+            name: name.trim(),
+            email: email.trim(),
+            password,
+            confirmPassword: confirm
+        };
+
+        try {
+            const res = await fetch('http://localhost:5000/api/register', { // update URL to your Flask route
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(payload)
+                // add `credentials: 'include'` if your backend uses cookies/sessions
+            });
+
+            // try parse JSON; backend may return JSON with message or error
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(data.message || data.error || 'Registration failed.');
+                setLoading(false);
+                return;
+            }
+
+            // success
+            console.log('Registered:', data);
+            setName('');
+            setEmail('');
+            setPassword('');
+            setConfirm('');
             setLoading(false);
-            console.log('Registered:', { name, email });
-            // Optionally redirect or clear form
-        }, 800);
+        } catch (err) {
+            setError('Network error. Please try again.');
+            setLoading(false);
+        }
     }
 
     return (
@@ -95,7 +137,7 @@ export default function Register() {
 
                 <div className="footer">
                     <div className="small">Already have an account?</div>
-                    <a href="/" className="link-button">Sign in</a>
+                    <a href="#" onClick={(e)=>{e.preventDefault(); if(onSignIn) onSignIn(); else window.location.href='/'}} className="link-button">Sign in</a>
                 </div>
             </form>
         </div>

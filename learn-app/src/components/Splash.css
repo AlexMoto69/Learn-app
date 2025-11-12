@@ -1,0 +1,162 @@
+:root{
+  --bg: #0b0b0f; /* dark background */
+  --card: linear-gradient(135deg,#0f1724 0%, #0b0b0f 100%);
+  --accent1: #ff6ec7; /* pink */
+  --accent2: #6ed0ff; /* blue */
+}
+
+.splash-root{
+  position:fixed;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  /* keep overflow hidden to prevent scroll flicker */
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 700ms ease; /* smoother overall fade on exit */
+}
+
+/* exiting state on root: fade whole splash out so it's not abrupt */
+.splash-root.exiting{
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* make sure the splash card sits above the background */
+.splash-card{
+  position: relative;
+  z-index: 1;
+  width:clamp(120px,20vw,220px);
+  height:clamp(120px,20vw,220px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:var(--card);
+  border-radius:18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 40px rgba(110,208,255,0.08) inset;
+  transform:scale(.6);
+  animation: popIn 750ms cubic-bezier(.2,.9,.3,1) forwards, glow 1600ms linear forwards;
+  overflow: hidden; /* ensure fragments are clipped to the card's rounded shape */
+}
+
+/* overlay element now holds the themed background and slides out */
+.splash-overlay{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  background:
+    radial-gradient(1200px 500px at 15% 15%, rgba(43,215,255,0.08), transparent),
+    radial-gradient(900px 450px at 85% 85%, rgba(255,60,166,0.05), transparent),
+    linear-gradient(180deg, #071026, #0b0f19);
+  transform: translateX(0%);
+  transition: transform 900ms cubic-bezier(.22,.9,.3,1), opacity 900ms ease;
+}
+
+/* when exiting, slide overlay out */
+.splash-root.exiting .splash-overlay{
+  transform: translateX(105%);
+  opacity: 0;
+}
+
+/* fragment container placed over card */
+.fragments{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0; /* remove gap so card looks whole until fragments appear */
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Fragments are hidden by default so the card doesn't look fragmented before exit */
+.fragment{
+  visibility: hidden;
+  background: inherit; /* inherit card background so fragments look like the card */
+  border: none;
+  border-radius: 0; /* no rounded corners on fragments to avoid visible seams */
+  opacity: 0;
+  transform: translateZ(0) scale(1);
+  will-change: transform, opacity;
+}
+
+/* shatter animation: fragments become visible then fly outward and fade; stagger via --i */
+.fragment.shatter{
+  visibility: visible;
+  animation-name: shatterAnim;
+  animation-duration: 1000ms;
+  animation-timing-function: cubic-bezier(.2,.9,.3,1);
+  animation-fill-mode: forwards;
+  /* animation-delay is set inline per-fragment to avoid CSS calc linter issues */
+  animation-delay: 0ms; /* default fallback */
+}
+
+@keyframes shatterAnim{
+  0%{
+    opacity: 1;
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+    filter: blur(0);
+  }
+  100%{
+    opacity: 0;
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(.18) rotate(var(--rot, 0deg));
+    filter: blur(1px);
+  }
+}
+
+/* assign random-ish directions by using nth-child fallback for predictable but varied motion */
+.fragment.shatter:nth-child(1){ --tx: -40px; --ty: -30px; --rot: -12deg; }
+.fragment.shatter:nth-child(2){ --tx: -24px; --ty: -46px; --rot: -6deg; }
+.fragment.shatter:nth-child(3){ --tx: 12px; --ty: -56px; --rot: 6deg; }
+.fragment.shatter:nth-child(4){ --tx: 40px; --ty: -32px; --rot: 12deg; }
+.fragment.shatter:nth-child(5){ --tx: -52px; --ty: -8px; --rot: -18deg; }
+.fragment.shatter:nth-child(6){ --tx: 60px; --ty: -8px; --rot: 18deg; }
+.fragment.shatter:nth-child(7){ --tx: -40px; --ty: 26px; --rot: -8deg; }
+.fragment.shatter:nth-child(8){ --tx: -12px; --ty: 36px; --rot: -4deg; }
+.fragment.shatter:nth-child(9){ --tx: 12px; --ty: 46px; --rot: 6deg; }
+.fragment.shatter:nth-child(10){ --tx: 44px; --ty: 32px; --rot: 14deg; }
+.fragment.shatter:nth-child(11){ --tx: -64px; --ty: 12px; --rot: -20deg; }
+.fragment.shatter:nth-child(12){ --tx: 74px; --ty: 12px; --rot: 20deg; }
+
+/* exiting: shrink and fade card slightly to suggest dispersion */
+.splash-card.exiting{
+  transition: transform 700ms cubic-bezier(.2,.9,.3,1), opacity 700ms ease, filter 700ms ease;
+  transform: scale(.32) translateY(-18px) rotate(-6deg);
+  opacity: 0;
+  filter: blur(1.6px);
+}
+
+/* when the card is exiting, animate the logo to scale up slightly and fade to blend */
+.splash-card.exiting .splash-logo{
+  transform: scale(1.25);
+  opacity: 0;
+  transition: transform 700ms cubic-bezier(.2,.9,.3,1), opacity 700ms ease;
+}
+
+.splash-logo{
+  width:70%;
+  height:70%;
+  object-fit:contain;
+  filter: drop-shadow(0 6px 18px rgba(110,208,255,0.12));
+}
+
+@keyframes popIn{
+  from{ opacity:0; transform:scale(.3) rotate(-6deg); }
+  60%{ transform:scale(1.06) rotate(3deg); }
+  to{ opacity:1; transform:scale(1) rotate(0); }
+}
+
+@keyframes glow{
+  0%{ box-shadow: 0 6px 18px rgba(110,208,255,0.08), 0 0 0 rgba(255,110,199,0); }
+  50%{ box-shadow: 0 10px 30px rgba(110,208,255,0.12), 0 0 28px rgba(255,110,199,0.08); }
+  100%{ box-shadow: 0 6px 18px rgba(110,208,255,0.06), 0 0 0 rgba(255,110,199,0); }
+}
+
+/* Respect user preference for reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .splash-overlay,
+  .splash-card{ animation: none !important; transition: none !important; }
+}

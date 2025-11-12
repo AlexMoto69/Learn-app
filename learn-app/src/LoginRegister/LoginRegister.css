@@ -18,11 +18,11 @@
     --error-pink: #ff8ac6;
 
     /* fluid sizes (use rem so they scale with root font-size) */
-    --radius-lg: clamp(0.75rem, 1.2vw, 1.25rem);
+    --radius-lg: clamp(0.5rem, 0.9vw, 0.9rem);
     --radius-md: clamp(0.45rem, 0.9vw, 0.8rem);
-    --gap: clamp(0.5rem, 0.9vw, 1rem);
-    --pad-card: clamp(1rem, 2.2vw, 1.8rem);
-    --pad-input: clamp(0.6rem, 1vw, 0.9rem);
+    --gap: clamp(0.5rem, 0.4vw, 0.4rem);
+    --pad-card: clamp(0.7rem, 1vw, 1rem);
+    --pad-input: clamp(0.4rem, 0.8vw, 1rem);
     --shadow-soft: 0 10px 30px rgba(2,6,23,0.6);
 }
 
@@ -50,8 +50,8 @@ html, body {
 
 /* Card: fluid width, padding and radius */
 .login-form {
-    width: clamp(280px, 40vw, 420px);
-    max-width: 92%;
+    width: clamp(220px, 20vw, 320px);
+    max-width: 320px;
     padding: var(--pad-card);
     border-radius: var(--radius-lg);
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
@@ -72,7 +72,7 @@ html, body {
 .login-form::before{
     content: "";
     position: absolute;
-    inset: -2px;
+    inset: 0;
     border-radius: calc(var(--radius-lg) + 2px);
     background: linear-gradient(120deg, rgba(255,60,166,0.06), rgba(43,215,255,0.06));
     z-index: 0;
@@ -177,5 +177,5 @@ html, body {
 
 /* Very large screens: keep card comfortably sized */
 @media (min-width: 1200px) {
-    .login-form { max-width: 460px; width: 34vw; }
+    .login-form { max-width: 380px; width: min(34vw, 380px); }
 }

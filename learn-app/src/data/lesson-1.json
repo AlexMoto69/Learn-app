@@ -1,0 +1,71 @@
+{
+  "module": "1",
+  "questions": [
+    {
+      "correct_index": 2,
+      "explanation": "Potrivit textului, organismul uman este organizat ierarhic și sistemele de organe reprezintă nivelul de organizare care include mai multe organe.",
+      "options": ["A. Celule", "B. Organe", "C. Sisteme de organe", "D. Organism"],
+      "question": "Care este nivelul de organizare care include sistemele de organe?",
+      "source_sentence": 1
+    },
+    {
+      "correct_index": 0,
+      "explanation": "Potrivit textului, exemple de sisteme de organe sunt sistemul digestiv și sistemul nervos.",
+      "options": [
+        "A. Sistem nervos și sistem endocrin",
+        "B. Inimă, ficat",
+        "C. Creier, măduva spinării",
+        "D. Plămâni, rinichi"
+      ],
+      "question": "Care sunt exemple de sisteme de organe?",
+      "source_sentence": 1
+    },
+    {
+      "correct_index": 0,
+      "explanation": "Potrivit textului, organismul uman este organizat ierarhic și celula reprezintă nivelul de organizare care include structură și funcție asemănătoare.",
+      "options": ["A. Sistem de organe", "B. Organism", "C. Organe", "D. Celule"],
+      "question": "Care este nivelul de organizare care include celule?",
+      "source_sentence": 1
+    },
+    {
+      "correct_index": 1,
+      "explanation": "Potrivit textului, exemple de sisteme cu funcțiile de nutriție sunt sistemul digestiv și sistemul circulator.",
+      "options": [
+        "A. Sistem nervos, sistem endocrin",
+        "B. Digestiv, circulator, respirator, excretor",
+        "C. Sistem reproducător masculin și feminin",
+        "D. Sistem locomotor"
+      ],
+      "question": "Care sunt exemple de sisteme cu funcțiile de nutriție?",
+      "source_sentence": 2
+    },
+    {
+      "correct_index": 1,
+      "explanation": "Potrivit textului, exemplu de organ este plămânul sau rinichiul.",
+      "options": ["A. Sistem de organe", "B. Organism", "C. Organe", "D. Celule"],
+      "question": "Care este nivelul de organizare care include plămâni și rinichi?",
+      "source_sentence": 3
+    },
+    {
+      "correct_index": 1,
+      "explanation": "Inima se află în mediastinul toracic, între plămânii drept și stâng.",
+      "options": ["Cutia craniană", "Mediastin, între plămâni", "Cavitatea abdominală"],
+      "question": "Locația anatomicală a inimii este:",
+      "source_sentence": 3
+    },
+    {
+      "correct_index": 2,
+      "explanation": "Organele subțiri și grozi sunt structuri individuale, nu formează un sistem de organe.",
+      "options": ["Sistemul digestiv", "Sistemele reproducătoare", "Organele subțiri și grozi"],
+      "question": "Care dintre următoarele nu este un sistem de organe?",
+      "source_sentence": 1
+    },
+    {
+      "correct_index": 2,
+      "explanation": "Sistemul nervos integrează funcțiile vitale cu sistemul endocrin.",
+      "options": ["Relația între organisme", "Nutriție și echilibrul intern", "Integrarea funcțiilor vitale"],
+      "question": "Care dintre următoarele este o funcție a sistemului nervos?",
+      "source_sentence": 2
+    }
+  ]
+}
