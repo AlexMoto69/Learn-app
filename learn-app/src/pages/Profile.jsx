@@ -1,137 +1,64 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import './Profile.css'
 import logo from '../assets/logo2.png'
+import { getProfile, updateProfile } from '../services/authService'
 
 export default function Profile({ onBack = () => {} }) {
-  // demo offline profile state
+  const [profile, setProfile] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [editing, setEditing] = useState(false)
-  const [name, setName] = useState('Demo User')
-  const [email, setEmail] = useState('demo@example.com')
 
-  // new demo progress/stats (keep only these per request)
-  const [streak, setStreak] = useState(3)
-  const [modulesCompleted, setModulesCompleted] = useState(1)
+  // editable fields
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
 
-  // UI status
-  const [statusMsg, setStatusMsg] = useState('')
-  const [syncedFromServer, setSyncedFromServer] = useState(false)
-
-  // load local data on mount (so editing works offline)
-  useEffect(() => {
+  // Fetch profile from backend
+  async function fetchProfile() {
+    setLoading(true); setError('')
     try {
-      const raw = localStorage.getItem('profile_demo')
-      if (raw) {
-        const obj = JSON.parse(raw)
-        if (obj.name) setName(obj.name)
-        if (obj.email) setEmail(obj.email)
-        if (typeof obj.streak === 'number') setStreak(obj.streak)
-        if (typeof obj.modulesCompleted === 'number') setModulesCompleted(obj.modulesCompleted)
-        setStatusMsg('Loaded local profile (offline)')
-        setSyncedFromServer(false)
+      const token = localStorage.getItem('access_token')
+      if (!token) { setError('Not authenticated. Please log in.'); setLoading(false); return }
+      const data = await getProfile(token)
+      setProfile(data)
+      setUsername(data.username || '')
+      setEmail(data.email || '')
+    } catch (e) {
+      setError(e?.message || 'Failed to load profile')
+    } finally { setLoading(false) }
+  }
+
+  useEffect(() => { fetchProfile() }, [])
+
+  async function saveProfile() {
+    setLoading(true); setError('')
+    try {
+      const token = localStorage.getItem('access_token')
+      const body = { username, email }
+      const res = await updateProfile(body, token)
+      // server returns { msg, updated, user }
+      if (res?.user) {
+        setProfile(res.user)
+        // sync local user cache if present
+        try { localStorage.setItem('user', JSON.stringify(res.user)) } catch { /* ignore quota */ }
       }
+      setEditing(false)
+      // automatically refresh from server to ensure latest computed fields
+      await fetchProfile()
     } catch (e) {
-      // ignore
-    }
-  }, [])
-
-  async function loadFromServer() {
-    setStatusMsg('Încerc să încarc profilul de pe server...')
-    try {
-      // Use credentials: 'include' so a server-set HttpOnly cookie can be used for auth.
-      const res = await fetch('http://localhost:5000/auth/profile', { method: 'GET', credentials: 'include' })
-      if (!res.ok) {
-        setStatusMsg(`Server răspunde cu status ${res.status}`)
-        return
-      }
-      const j = await res.json()
-      // map server fields to local state if present
-      if (j.name) setName(j.name)
-      if (j.email) setEmail(j.email)
-      if (typeof j.streak === 'number') setStreak(j.streak)
-      if (typeof j.modulesCompleted === 'number') setModulesCompleted(j.modulesCompleted)
-      setSyncedFromServer(true)
-      setStatusMsg('Profil încărcat de pe server')
-      // also persist locally as cache
-      try { localStorage.setItem('profile_demo', JSON.stringify({ name: j.name || name, email: j.email || email, streak: j.streak || streak, modulesCompleted: j.modulesCompleted || modulesCompleted })) } catch (e) {}
-    } catch (e) {
-      console.error(e)
-      setStatusMsg('Nu am putut contacta serverul (folosesc modul offline)')
-    }
+      setError(e?.message || 'Failed to save profile')
+    } finally { setLoading(false) }
   }
 
-  async function save() {
-    const payload = { name, email, streak, modulesCompleted }
-    setEditing(false)
-    // try to send to server first (server should handle auth via cookie/httpOnly)
-    try {
-      const res = await fetch('http://localhost:5000/auth/profile', {
-        method: 'POST', // or PUT depending on backend
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload)
-      })
-      if (res.ok) {
-        setStatusMsg('Profil salvat pe server')
-        setSyncedFromServer(true)
-        try { localStorage.setItem('profile_demo', JSON.stringify(payload)) } catch (e) {}
-        return
-      } else {
-        // server returned error; fallback to local save
-        setStatusMsg(`Server error: ${res.status} — salvare locală`)
-      }
-    } catch (e) {
-      console.error('Save to server failed:', e)
-      setStatusMsg('Eroare la salvare pe server — salvare locală')
-    }
-
-    // fallback: save to localStorage so edits persist offline
-    try {
-      localStorage.setItem('profile_demo', JSON.stringify(payload))
-      setSyncedFromServer(false)
-      setStatusMsg('Profil salvat local (offline)')
-    } catch (e) {
-      console.error('Local save failed', e)
-      setStatusMsg('Eroare la salvare locală')
-    }
-  }
-
-  function resetProgress() {
-    setStreak(0)
-    setModulesCompleted(0)
-    setStatusMsg('Progres resetat (nu salvat automat)')
-  }
-
-  function exportProfile() {
-    const payload = { name, email, streak, modulesCompleted }
-    const text = JSON.stringify(payload, null, 2)
-    // try clipboard first
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Profile JSON copied to clipboard (demo)')
-      }).catch(() => {
-        // fallback to download
-        const blob = new Blob([text], { type: 'application/json' })
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = `${name.replace(/\s+/g, '_') || 'profile'}_profile.json`
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-        URL.revokeObjectURL(url)
-      })
-    } else {
-      const blob = new Blob([text], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${name.replace(/\s+/g, '_') || 'profile'}_profile.json`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
-    }
-  }
+  const totalScore = profile?.total_score ?? 0
+  const streak = profile?.current_streak ?? 0
+  const longest = profile?.longest_streak ?? 0
+  const modulesCompleted = Array.isArray(profile?.completed_modules) ? profile.completed_modules.length : 0
+  const modulesInProgress = Array.isArray(profile?.modules_in_progress) ? profile.modules_in_progress.length : 0
+  const completedList = Array.isArray(profile?.completed_modules) ? profile.completed_modules : []
+  const progressList = Array.isArray(profile?.modules_in_progress) ? profile.modules_in_progress : []
+  const completedListLabel = modulesCompleted ? `module ${completedList.join(', ')}` : '—'
+  const progressListLabel = modulesInProgress ? `module ${progressList.join(', ')}` : '—'
 
   return (
     <div className="profile-root">
@@ -141,58 +68,75 @@ export default function Profile({ onBack = () => {} }) {
         <img src={logo} alt="avatar" className="profile-avatar" />
 
         <div className="profile-info">
-          <div className="profile-sync">
-            <button className="btn small" onClick={loadFromServer}>Load from server</button>
-            <span style={{marginLeft:12}}>{syncedFromServer ? 'Synced from server' : 'Local / offline'}</span>
+          <div className="profile-header">
+            <h2 className="profile-name">{profile?.username || username || '—'}</h2>
+            <div className="profile-email">{profile?.email || email || '—'}</div>
+          </div>
+
+          {error && (
+            <div className="profile-error" role="alert">{error}</div>
+          )}
+
+          <div className="profile-stats">
+            <div className="stat stat--score">
+              <div className="stat-top">
+                <span className="stat-icon" aria-hidden>⭐</span>
+                <span className="stat-title">Total score</span>
+              </div>
+              <div className="stat-value">{totalScore}</div>
+            </div>
+
+            <div className="stat stat--streak">
+              <div className="stat-top">
+                <span className="stat-icon" aria-hidden>🔥</span>
+                <span className="stat-title">Streak</span>
+              </div>
+              <div className="stat-value">{streak}</div>
+              <div className="stat-note">Longest: {longest}</div>
+            </div>
+
+            <div className="stat stat--completed">
+              <div className="stat-top">
+                <span className="stat-icon" aria-hidden>✅</span>
+                <span className="stat-title">Completed</span>
+              </div>
+              <div className="stat-value">{modulesCompleted}</div>
+              <div className="stat-sub">{completedListLabel}</div>
+            </div>
+
+            <div className="stat stat--progress">
+              <div className="stat-top">
+                <span className="stat-icon" aria-hidden>⏳</span>
+                <span className="stat-title">In progress</span>
+              </div>
+              <div className="stat-value">{modulesInProgress}</div>
+              <div className="stat-sub">{progressListLabel}{modulesInProgress ? ' in progress' : ''}</div>
+            </div>
           </div>
 
           {!editing ? (
-            <>
-              <h2 className="profile-name">{name}</h2>
-              <div className="profile-email">{email}</div>
-
-              <div className="profile-stats">
-                <div className="stat">
-                  <div className="stat-value">{streak}</div>
-                  <div className="stat-label">Streak (days)</div>
-                </div>
-                <div className="stat">
-                  <div className="stat-value">{modulesCompleted}</div>
-                  <div className="stat-label">Modules completed</div>
-                </div>
-              </div>
-
-              <div className="profile-actions">
-                <button className="btn" onClick={() => setEditing(true)}>Edit profile</button>
-                <button className="btn ghost" onClick={exportProfile}>Export JSON</button>
-                <button className="btn small" onClick={save} style={{marginLeft:8}}>Save</button>
-              </div>
-
-              <div className="profile-controls">
-                <button className="btn small" onClick={() => setStreak((s) => s + 1)}>+ Day (streak)</button>
-                <button className="btn small" onClick={() => setModulesCompleted((m) => m + 1)}>Complete module</button>
-                <button className="btn small" onClick={resetProgress}>Reset progress</button>
-              </div>
-            </>
+            <div className="profile-actions">
+              <button className="btn" onClick={() => setEditing(true)} disabled={loading}>Edit</button>
+              {/* Removed manual Refresh button; data refreshes on mount and after save */}
+            </div>
           ) : (
             <div className="profile-edit">
               <label>
-                Name
-                <input value={name} onChange={(e) => setName(e.target.value)} />
+                Username
+                <input value={username} onChange={(e) => setUsername(e.target.value)} />
               </label>
               <label>
                 Email
                 <input value={email} onChange={(e) => setEmail(e.target.value)} />
               </label>
               <div className="profile-edit-actions">
-                <button className="btn" onClick={save}>Save</button>
+                <button className="btn" onClick={saveProfile} disabled={loading}>Save</button>
                 <button className="btn ghost" onClick={() => setEditing(false)}>Cancel</button>
               </div>
             </div>
           )}
 
-          <div style={{marginTop:12,color:'rgba(200,220,240,0.75)'}}>{statusMsg}</div>
-
+          {loading && <div className="profile-loading">Loading…</div>}
         </div>
       </div>
     </div>
