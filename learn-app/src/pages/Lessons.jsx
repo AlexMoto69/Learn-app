@@ -116,6 +116,10 @@ export default function Lessons() {
   const [qIndex, setQIndex] = useState(0)
   const [selected, setSelected] = useState(null)
   const [revealed, setRevealed] = useState(false)
+  // store per-question answered-correctness to avoid races with setState
+  const answersRef = React.useRef({})
+  // track whether the current in-memory selection is correct (fallback if answersRef isn't read yet)
+  const currentSelectionCorrectRef = React.useRef(false)
 
   // measure top offset (height of the fixed menu) so the first node isn't hidden
   const [topOffset, setTopOffset] = useState(84)
@@ -189,6 +193,8 @@ export default function Lessons() {
     setUnlockedLevel(0)
     setLoading(false)
     setError(null)
+    // clear in-memory selection correctness when loading module/demo
+    try { currentSelectionCorrectRef.current = false } catch (e) {}
     // allow layout to adjust and force a recalculation of top offset
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -202,6 +208,11 @@ export default function Lessons() {
     }, 80)
   }
 
+  // clear answers when module changes
+  useEffect(() => {
+    answersRef.current = {}
+  }, [activeModule])
+
   // derived
   const currentLevelQuestions = startedLevel >= 0 ? levels[startedLevel] : []
   const total = currentLevelQuestions.length
@@ -213,10 +224,19 @@ export default function Lessons() {
     if (i > unlockedLevel) return // locked
     if (levels[i].length === 0) return // empty level
 
+    // clear previous answers for this level (avoid stale data)
+    try {
+      Object.keys(answersRef.current).forEach((k) => {
+        if (k.startsWith(`${i}-`)) delete answersRef.current[k]
+      })
+    } catch (e) {}
+
     setStartedLevel(i)
     setQIndex(0)
     setSelected(null)
     setRevealed(false)
+    // clear any tracked in-memory correctness for the new level
+    try { currentSelectionCorrectRef.current = false } catch (e) {}
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -225,32 +245,23 @@ export default function Lessons() {
     if (revealed) return
     setSelected(optIdx)
     setRevealed(true)
-
-    // if last question in level and correct answer, unlock next level
-    const isCorrect = current && current.correct_index === optIdx
-    if (isCorrect && qIndex === total - 1 && startedLevel < LEVEL_COUNT - 1) {
-      setUnlockedLevel((s) => Math.max(s, startedLevel + 1))
-    }
+    // store correctness immediately in ref to avoid async state races
+    try {
+      const lvl = startedLevel
+      const q = qIndex
+      const question = (levels[lvl] && levels[lvl][q]) || null
+      const correct = question ? (optIdx === question.correct_index) : false
+      answersRef.current[`${lvl}-${q}`] = !!correct
+      // also update currentSelectionCorrectRef for finish-time checks
+      currentSelectionCorrectRef.current = !!correct
+    } catch (e) {}
   }
 
-  function next() {
-    if (startedLevel < 0) return
-    if (!revealed) return // must answer to go next
-    if (qIndex < total - 1) {
-      setQIndex((i) => i + 1)
-      setSelected(null)
-      setRevealed(false)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
-      // at last question and revealed -> finish level
-      finishLevel()
-    }
-  }
-
+  // navigate to previous question within the current started level (offline-safe)
   function prev() {
     if (startedLevel < 0) return
     if (qIndex > 0) {
-      setQIndex((i) => i - 1)
+      setQIndex((i) => Math.max(0, i - 1))
       setSelected(null)
       setRevealed(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -258,11 +269,59 @@ export default function Lessons() {
   }
 
   function finishLevel() {
+    // If the user just revealed the last question and it was correct, unlock the next level.
+    try {
+      if (startedLevel >= 0) {
+        const lvl = startedLevel
+        // Prefer the user's current question (qIndex) as the candidate for unlocking.
+        // If it's not present, fall back to the last question in the level or any correct answer.
+        const lastIdx = Math.max(0, total - 1)
+        const candidateIdx = Math.min(Math.max(0, qIndex), lastIdx)
+        const candidateKey = `${lvl}-${candidateIdx}`
+        const candidateAnswered = Object.prototype.hasOwnProperty.call(answersRef.current, candidateKey)
+        const candidateRaw = answersRef.current[candidateKey]
+        const candidateCorrect = Boolean(candidateRaw)
+
+        // also treat the current selected option or the tracked in-memory selection as a source of truth
+        const isCurrentSelectionCorrect = (selected !== null && current && selected === current.correct_index) || currentSelectionCorrectRef.current
+
+        // also check if any question in the level has a truthy (correct) value (fallback)
+        const keys = Array.from({ length: total }, (_, idx) => `${lvl}-${idx}`)
+        const anyCorrect = keys.some((k) => Boolean(answersRef.current[k]))
+
+        console.log('finishLevel debug:', {
+          lvl,
+          total,
+          qIndex,
+          candidateKey,
+          candidateAnswered,
+          candidateRaw,
+          candidateType: typeof candidateRaw,
+          candidateCorrect,
+          anyCorrect,
+          isCurrentSelectionCorrect,
+          answers: JSON.stringify(answersRef.current),
+        })
+
+        // Unlock if the candidate question is answered and considered correct (truthy),
+        // or if the current in-memory selection is correct, or if any question in the level is truthy.
+        if (((candidateAnswered && candidateCorrect) || isCurrentSelectionCorrect || anyCorrect) && lvl < LEVEL_COUNT - 1) {
+          console.log('finishLevel: unlocking next level ->', lvl + 1)
+          setUnlockedLevel((prev) => Math.max(prev, lvl + 1))
+        } else {
+          console.log('finishLevel: not unlocking (no correct answers recorded for this level)')
+        }
+      }
+    } catch (e) {
+      // ignore safety errors
+    }
+
     // return to the level list view
     setStartedLevel(-1)
     setQIndex(0)
     setSelected(null)
     setRevealed(false)
+    try { currentSelectionCorrectRef.current = false } catch (e) {}
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -325,9 +384,9 @@ export default function Lessons() {
 
       {/* small info to confirm loaded data (helps debugging offline) */}
       <div className="lesson-meta" style={{padding: '0.6rem 1rem', color: 'rgba(230,238,248,0.85)'}}>
-        Întrebări: {questions.length} — Nivele: {levels.length}
-      </div>
-+
+         Întrebări: {questions.length} — Nivele: {levels.length}
+       </div>
+
       {loading && (
         <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--text, #e6eef8)' }}>
           Încărcare lecție...
@@ -431,15 +490,44 @@ export default function Lessons() {
 
               <button
                 type="button"
-                onClick={next}
+                onClick={finishLevel}
                 disabled={!revealed}
                 className="ctrl"
               >
-                {qIndex < total - 1 ? 'Next' : 'Finish'}
+                Finish
               </button>
             </div>
           </div>
         </article>
+      )}
+
+      {/* Visible debug banner to inspect unlocking state */}
+      {startedLevel >= 0 && (
+        (() => {
+          const lvl = startedLevel
+          const lastIdx = Math.max(0, (levels[lvl] || []).length - 1)
+          const candidateIdx = Math.min(Math.max(0, qIndex), lastIdx)
+          const candidateKey = `${lvl}-${candidateIdx}`
+          const candidateAnswered = Object.prototype.hasOwnProperty.call(answersRef.current, candidateKey)
+          const candidateRaw = answersRef.current[candidateKey]
+          const candidateCorrect = Boolean(candidateRaw)
+          const keys = Array.from({ length: (levels[lvl] || []).length }, (_, idx) => `${lvl}-${idx}`)
+          const anyCorrect = keys.some((k) => Boolean(answersRef.current[k]))
+          const isCurrentSelectionCorrect = (selected !== null && current && selected === current.correct_index) || currentSelectionCorrectRef.current
+          return (
+            <div style={{ padding: '0.5rem 1rem', background: 'rgba(0,0,0,0.18)', color: '#bfe8ff', fontSize: '.85rem' }}>
+              <strong>Unlock debug:</strong>
+              <span style={{ marginLeft: 8 }}>qIndex={qIndex}</span>
+              <span style={{ marginLeft: 8 }}>candidateKey={candidateKey}</span>
+              <span style={{ marginLeft: 8 }}>candidateAnswered={String(candidateAnswered)}</span>
+              <span style={{ marginLeft: 8 }}>candidateRaw={String(candidateRaw)}</span>
+              <span style={{ marginLeft: 8 }}>candidateCorrect={String(candidateCorrect)}</span>
+              <span style={{ marginLeft: 8 }}>isCurrentSelectionCorrect={String(isCurrentSelectionCorrect)}</span>
+              <span style={{ marginLeft: 8 }}>anyCorrect={String(anyCorrect)}</span>
+              <span style={{ marginLeft: 8 }}>unlockedLevel={unlockedLevel}</span>
+            </div>
+          )
+        })()
       )}
     </div>
   )

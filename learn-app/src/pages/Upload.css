@@ -1,0 +1,16 @@
+.upload-root{padding:1rem 1.2rem;color:var(--text,#e6eef8)}
+.upload-root .back{background:transparent;border:none;color:var(--text);font-size:1rem;margin-bottom:1rem;cursor:pointer}
+.upload-card{max-width:940px;margin:0 auto;padding:1rem;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.06));box-shadow:0 6px 18px rgba(0,0,0,0.5)}
+.dropzone{border:2px dashed rgba(255,255,255,0.06);border-radius:12px;padding:2rem;text-align:center;cursor:pointer;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent)}
+.dz-empty{opacity:.95}
+.dz-icon{font-size:28px;margin-bottom:.6rem}
+.dz-note{color:rgba(230,238,248,0.65);margin-top:.4rem}
+.dz-hasfile{display:flex;align-items:center;gap:12px}
+.file-meta{flex:1;text-align:left}
+.file-preview img{max-width:120px;border-radius:8px}
+.upload-actions{display:flex;gap:.6rem;margin-top:1rem}
+.btn{padding:.6rem .9rem;border-radius:9px;background:#393052;border:none;color:#fff;cursor:pointer}
+.btn.primary{background:#6b63ff}
+.upload-error{color:salmon;margin-top:.6rem}
+@media(max-width:640px){.dz-hasfile{flex-direction:column;align-items:center}}
+
