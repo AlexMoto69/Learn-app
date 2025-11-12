@@ -1,6 +1,7 @@
 // javascript
 import React, { useState } from 'react';
 import './LoginRegister.css';
+import { login as apiLogin } from '../services/authService';
 
 export default function Login({ onLogin, onRegisterClick }) {
     const [identifier, setIdentifier] = useState('');
@@ -18,39 +19,17 @@ export default function Login({ onLogin, onRegisterClick }) {
         setLoading(true);
 
         try {
-            // If parent provided an onLogin handler, prefer it (e.g. for centralized auth)
-            if (onLogin) {
-                await onLogin({ identifier: identifier.trim(), password });
-                return;
-            }
+            const data = await apiLogin({ identifier: identifier.trim(), password });
 
-            // Otherwise send JSON to backend Flask endpoint
-            const res = await fetch('http://localhost:5000/api/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                // include cookies if your Flask session/auth relies on them
-                credentials: 'include', // remove if not needed
-                body: JSON.stringify({
-                    identifier: identifier.trim(),
-                    password
-                })
-            });
+            const token = data.access_token || data.token || data.accessToken;
+            const user = data.user || null;
 
-            const data = await res.json().catch(() => ({}));
+            if (token) localStorage.setItem('access_token', token);
+            if (user) localStorage.setItem('user', JSON.stringify(user));
 
-            if (!res.ok) {
-                setError(data.message || data.error || 'Login failed.');
-                return;
-            }
+            if (onLogin) onLogin({ token, user, raw: data });
+            else window.location.reload();
 
-            // success: data may contain token/user
-            console.log('Login success:', data);
-            // Optionally call onLogin with server result if you want parent to know
-            if (onLogin) onLogin(data);
-            // clear sensitive fields
             setPassword('');
         } catch (err) {
             setError(err?.message || 'Network error. Please try again.');

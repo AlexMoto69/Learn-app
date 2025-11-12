@@ -49,3 +49,4 @@ createRoot(document.getElementById('root')).render(
     <Boot />
   </StrictMode>,
 )
+export default Boot

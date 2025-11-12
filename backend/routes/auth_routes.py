@@ -46,7 +46,7 @@ def login():
         return jsonify({
             "success": False,
             "error": "Invalid password"
-        }, 401)
+        }), 401
 
     token = create_access_token(identity=str(user.id))
 

@@ -2,6 +2,8 @@
 // File: learn-app/src/LoginRegister/Register.jsx
 import React, { useState } from 'react';
 import './LoginRegister.css';
+import { useAuth } from '../contexts/authContext';
+import { register as apiRegister } from '../services/authService';
 
 export default function Register({ onSignIn }) {
     const [name, setName] = useState('');
@@ -10,6 +12,8 @@ export default function Register({ onSignIn }) {
     const [confirm, setConfirm] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const auth = useAuth();
 
     function isValidEmail(value) {
         return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -41,41 +45,35 @@ export default function Register({ onSignIn }) {
         setLoading(true);
 
         const payload = {
-            name: name.trim(),
+            username: name.trim(),
             email: email.trim(),
             password,
-            confirmPassword: confirm
         };
 
         try {
-            const res = await fetch('http://localhost:5000/api/register', { // update URL to your Flask route
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify(payload)
-                // add `credentials: 'include'` if your backend uses cookies/sessions
-            });
+            const data = await apiRegister(payload);
 
-            // try parse JSON; backend may return JSON with message or error
-            const data = await res.json().catch(() => ({}));
+            // backend returns a message; some backends auto-login and return token/user
+            const token = data.access_token || data.token || data.accessToken;
+            const user = data.user || null;
 
-            if (!res.ok) {
-                setError(data.message || data.error || 'Registration failed.');
-                setLoading(false);
+            if (token) {
+                auth.loginUser({ token, user });
+                window.location.reload();
                 return;
             }
 
-            // success
+            // If no token returned, assume registration succeeded
             console.log('Registered:', data);
             setName('');
             setEmail('');
             setPassword('');
             setConfirm('');
-            setLoading(false);
+            // If parent provided onSignIn, navigate to sign-in
+            if (onSignIn) onSignIn();
         } catch (err) {
-            setError('Network error. Please try again.');
+            setError(err?.message || 'Network error. Please try again.');
+        } finally {
             setLoading(false);
         }
     }
