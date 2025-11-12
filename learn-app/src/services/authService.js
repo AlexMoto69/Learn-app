@@ -196,3 +196,33 @@ export async function submitQuiz(payload) {
     throw e;
   }
 }
+
+export async function getDailyQuiz({ module, count, signal } = {}) {
+  const params = new URLSearchParams();
+  if (module) params.set('module', String(module));
+  if (count) params.set('count', String(count));
+  const qs = params.toString();
+  const path = `/api/quiz/daily${qs ? `?${qs}` : ''}`;
+
+  const doGet = async (access) => request(path, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${access}` },
+    signal,
+  });
+
+  const access = getAccessToken();
+  if (!access) {
+    const e = new Error('Not authenticated');
+    e.status = 401; throw e;
+  }
+  try {
+    return await doGet(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doGet(access2);
+    }
+    throw e;
+  }
+}

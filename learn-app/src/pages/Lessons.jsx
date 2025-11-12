@@ -35,33 +35,16 @@ export default function Lessons() {
     // AbortController ref for canceling requests
     const abortRef = React.useRef(null);
 
+    // New: track selections to build a detailed report
+    const selectionsRef = React.useRef({});
+
+    // New: report state
+    const [showReport, setShowReport] = useState(false);
+    const [reportItems, setReportItems] = useState([]);
+    const [reportSummary, setReportSummary] = useState({ correct: 0, total: 0, module: null });
+
     useEffect(() => { answersRef.current = {}; }, [activeModule]);
     useEffect(() => { return () => { if (timerRef.current) clearInterval(timerRef.current); } }, []);
-
-    // Load a specific level (server call). Returns true if questions loaded.
-    async function loadLevel(i) {
-        if (levelsData[i]) return true;
-
-        try {
-            const data = await getModuleQuiz(activeModule);
-            const qs = Array.isArray(data?.questions)
-                ? data.questions.slice(0, QUIZ_QUESTION_COUNT)
-                : [];
-
-            if (!qs.length) {
-                setError(data?.msg || "Serverul nu a returnat întrebările pentru acest nivel. Încearcă din nou.");
-                return false;
-            }
-
-            setLevelsData(arr => arr.map((v, idx) => (idx === i ? qs : v)));
-            return true;
-        } catch (err) {
-            const msg = err?.message || 'Eroare de rețea';
-            console.warn('loadLevel error:', err);
-            setError(`Nu am putut încărca întrebările pentru nivel. (${msg})`);
-            return false;
-        }
-    }
 
     function selectModule(id) {
         setActiveModule(id);
@@ -95,7 +78,9 @@ export default function Lessons() {
         timerRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
 
         // create AbortController for this request
-        if (abortRef.current) abortRef.current.abort();
+        if (abortRef.current) {
+            try { abortRef.current.abort(); } catch (e) { void e; }
+        }
         abortRef.current = new AbortController();
 
         let ok = false;
@@ -141,7 +126,17 @@ export default function Lessons() {
         setRevealed(false);
         setElapsed(0);
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-        if (abortRef.current) { try { abortRef.current.abort(); } catch {} finally { abortRef.current = null; } }
+        if (abortRef.current) { try { abortRef.current.abort(); } catch (e) { void e; } abortRef.current = null; }
+    }
+
+    function chooseAnswer(optionIndex) {
+        if (!current || revealed) return;
+        setSelected(optionIndex);
+        setRevealed(true);
+        // save selection and correctness
+        const key = `${startedLevel}-${qIndex}`;
+        selectionsRef.current[key] = optionIndex;
+        answersRef.current[key] = (optionIndex === current.correct_index);
     }
 
     async function finishLevel() {
@@ -149,9 +144,25 @@ export default function Lessons() {
         const qs = currentLevels[lvl] || [];
         let correctCount = 0;
 
-        qs.forEach((_, i) => {
-            if (answersRef.current[`${lvl}-${i}`]) correctCount++;
+        const items = qs.map((q, idx) => {
+            const key = `${lvl}-${idx}`;
+            const sel = selectionsRef.current[key];
+            const isCorrect = sel === q.correct_index;
+            if (isCorrect) correctCount++;
+            return {
+                index: idx + 1,
+                question: q.question,
+                options: q.options,
+                correct_index: q.correct_index,
+                selected_index: typeof sel === 'number' ? sel : null,
+                explanation: q.explanation || '',
+                result: isCorrect ? 'correct' : 'wrong',
+            };
         });
+
+        setReportItems(items);
+        setReportSummary({ correct: correctCount, total: qs.length, module: parseInt(activeModule) });
+        setShowReport(true);
 
         if (correctCount > 0 && lvl < LEVEL_COUNT - 1) {
             setUnlockedLevel(prev => Math.max(prev, lvl + 1));
@@ -167,19 +178,43 @@ export default function Lessons() {
             console.warn('submitQuiz failed:', e);
         }
 
-        // reset
+        // reset quiz state but keep report visible
         setStartedLevel(-1);
         setSelected(null);
         setRevealed(false);
         setQIndex(0);
         answersRef.current = {};
+        selectionsRef.current = {};
     }
 
-    function chooseAnswer(optionIndex) {
-        if (!current || revealed) return;
-        setSelected(optionIndex);
-        setRevealed(true);
-        answersRef.current[`${startedLevel}-${qIndex}`] = (optionIndex === current.correct_index);
+    function downloadReport() {
+        try {
+            const lines = [];
+            const header = `Raport quiz — Modul ${reportSummary.module} — Corecte: ${reportSummary.correct}/${reportSummary.total}`;
+            lines.push(header);
+            lines.push('');
+            reportItems.forEach(item => {
+                const sel = item.selected_index;
+                const selText = (typeof sel === 'number' && item.options[sel] !== undefined) ? item.options[sel] : '—';
+                const correctText = item.options[item.correct_index] ?? '—';
+                lines.push(`Q${item.index}. ${item.question}`);
+                lines.push(`  Răspunsul tău: ${selText}${item.result === 'correct' ? ' ✅' : ' ❌'}`);
+                lines.push(`  Răspuns corect: ${correctText}`);
+                if ((item.explanation || '').trim()) {
+                    lines.push(`  Explicație: ${item.explanation.trim()}`);
+                }
+                lines.push('');
+            });
+            const blob = new Blob([lines.join('\n')], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `raport-modul-${reportSummary.module}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) { void e; }
     }
 
     const modules = Array.from({ length: 8 }, (_, i) => ({
@@ -227,7 +262,7 @@ export default function Lessons() {
                     setGenerating(false);
                     setElapsed(0);
                     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
-                    if (abortRef.current) { try { abortRef.current.abort(); } catch {} finally { abortRef.current = null; } }
+                    if (abortRef.current) { try { abortRef.current.abort(); } catch (e) { void e; } abortRef.current = null; }
                     answersRef.current = {};
                     window.scrollTo(0, 0);
                   }}
@@ -280,16 +315,9 @@ export default function Lessons() {
                                 {current.options.map((o, i) => {
                                     const isSelected = selected === i;
                                     const correct = current.correct_index === i;
-                                    const state =
-                                        revealed ? (correct ? "correct" : isSelected ? "wrong" : "") : "";
-
+                                    const state = revealed ? (correct ? 'correct' : isSelected ? 'wrong' : '') : '';
                                     return (
-                                        <button
-                                            key={i}
-                                            className={"option " + state}
-                                            disabled={revealed}
-                                            onClick={() => chooseAnswer(i)}
-                                        >
+                                        <button key={i} className={'option ' + state} disabled={revealed} onClick={() => chooseAnswer(i)}>
                                             {o}
                                         </button>
                                     );
@@ -298,45 +326,57 @@ export default function Lessons() {
 
                             <div className="lesson-footer">
                                 {revealed ? (
-                                    <p>
-                                        {selected === current.correct_index
-                                            ? "Corect!"
-                                            : "Răspuns corect: " + current.options[current.correct_index]}
-                                    </p>
+                                    <div className="explanation">
+                                        <div className="result">
+                                            {selected === current.correct_index ? 'Corect!' : 'Răspuns corect: ' + current.options[current.correct_index]}
+                                        </div>
+                                        {current.explanation && (
+                                            <p className="explain-text">{current.explanation}</p>
+                                        )}
+                                    </div>
                                 ) : (
                                     <em>Alege o opțiune</em>
                                 )}
 
                                 <div className="controls">
-                                    <button
-                                        disabled={qIndex === 0}
-                                        onClick={() => {
-                                            setQIndex(i => i - 1);
-                                            setSelected(null);
-                                            setRevealed(false);
-                                        }}
-                                    >
-                                        Previous
-                                    </button>
-
-                                    <button
-                                        onClick={() => {
-                                            if (qIndex < currentLevelQuestions.length - 1) {
-                                                setQIndex(i => i + 1);
-                                                setSelected(null);
-                                                setRevealed(false);
-                                            } else {
-                                                finishLevel();
-                                            }
-                                        }}
-                                    >
-                                        {qIndex < currentLevelQuestions.length - 1 ? "Next" : "Finish"}
-                                    </button>
+                                    <button disabled={qIndex === 0} onClick={() => { setQIndex(i => i - 1); setSelected(null); setRevealed(false); }}>Previous</button>
+                                    <button onClick={() => {
+                                        if (qIndex < currentLevelQuestions.length - 1) {
+                                            setQIndex(i => i + 1); setSelected(null); setRevealed(false);
+                                        } else { finishLevel(); }
+                                    }}>{qIndex < currentLevelQuestions.length - 1 ? 'Next' : 'Finish'}</button>
                                 </div>
                             </div>
                         </>
                     )}
                 </article>
+            )}
+
+            {showReport && (
+                <div className="report-root">
+                    <div className="report-header">
+                        <h4>Raport — Modul {reportSummary.module}</h4>
+                        <div className="report-score">Corecte: {reportSummary.correct} / {reportSummary.total}</div>
+                    </div>
+                    <div className="report-list">
+                        {reportItems.map((it) => {
+                            const sel = (typeof it.selected_index === 'number') ? it.options[it.selected_index] : '—';
+                            const corr = it.options[it.correct_index] ?? '—';
+                            return (
+                                <div key={it.index} className={'report-item ' + it.result}>
+                                    <div className="rep-q">{it.index}. {it.question}</div>
+                                    <div className="rep-a">Răspunsul tău: <b>{sel}</b> {it.result === 'correct' ? '✅' : '❌'}</div>
+                                    <div className="rep-c">Răspuns corect: <b>{corr}</b></div>
+                                    {it.explanation && <div className="rep-e">Explicație: {it.explanation}</div>}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="report-actions">
+                        <button className="btn" onClick={downloadReport}>Descarcă raport</button>
+                        <button className="btn" onClick={() => setShowReport(false)}>Închide</button>
+                    </div>
+                </div>
             )}
         </div>
     );

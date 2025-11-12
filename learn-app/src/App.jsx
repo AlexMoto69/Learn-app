@@ -5,6 +5,7 @@ import Lessons from './pages/Lessons'
 import Chatbot from './pages/Chatbot'
 import Profile from './pages/Profile'
 import Upload from './pages/Upload'
+import Daily from './pages/Daily'
 
 function Placeholder({ title }) {
   return (
@@ -26,7 +27,7 @@ export default function App({ initialScreen = 'lessons' }){
     <div className="app-root">
       <MainMenu onNavigate={handleNavigate} />
       {screen === 'lessons' && <Lessons />}
-      {screen === 'daily' && <Placeholder title="Daily Challenge" />}
+      {screen === 'daily' && <Daily />}
       {screen === 'chatbot' && <Chatbot />}
       {screen === 'friends' && <Placeholder title="Friends" />}
       {screen === 'profile' && <Profile />}
