@@ -32,6 +32,11 @@ export default function MainMenu({ onNavigate = () => {} }){
                     <span className="nav-label">Chatbot</span>
                 </button>
 
+                {/* Center logo as a circular, non-clickable item */}
+                <div className="nav-item logo" aria-hidden="true" tabIndex={-1}>
+                    <span className="nav-icon-wrap app-logo-circle"><img src={appLogo} className="app-logo" alt="" /></span>
+                </div>
+
                 <button className="nav-item" onClick={() => onNavigate('friends')}>
                     <span className="nav-icon-wrap"><img src={friendsIcon} className="nav-icon" alt="Friends" /></span>
                     <span className="nav-label">Friends</span>
@@ -47,16 +52,13 @@ export default function MainMenu({ onNavigate = () => {} }){
                     <span className="nav-label">Upload</span>
                 </button>
 
-                {/* Visible logout icon */}
                 <button className="nav-item" onClick={() => { logout(); window.location.reload(); }}>
                     <span className="nav-icon-wrap"><img src={logoutIcon} className="nav-icon" alt="Log out" /></span>
                     <span className="nav-label">Log out</span>
                 </button>
             </nav>
 
-            <div className="app-logo-wrap">
-                <img src={appLogo} className="app-logo" alt="App logo" />
-            </div>
+            {/* removed right-side app-logo wrap to keep logo centered in nav */}
         </>
     );
 

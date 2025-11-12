@@ -89,8 +89,7 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 
 /* New approach: fixed, centered restricted menu container. This ensures nothing else can stretch it. */
 .restricted-menu{
-    position: fixed;
-    top: 0; /* pin to top */
+    position: fixed; /* nudge bar down so oversized center logo is not cut at the top */
     left: 50%;
     transform: translateX(-50%);
 
@@ -113,6 +112,8 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 
     height: var(--menu-h); /* fixed height */
     min-height: var(--menu-h);
+
+    overflow: visible; /* allow center logo to extend beyond bar */
 }
 
 /* ensure the centered container doesn't animate its size */
@@ -122,9 +123,9 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
 }
 
 /* Reserve space so content below doesn't hide under the fixed bar */
-.main-card{ margin-top: calc(var(--menu-h) + 18px); background: transparent}
+.main-card{ margin-top: calc(var(--menu-h) + 26px); background: transparent}
 
- /* keep the app logo pinned to the right of the restricted bar */
+/* keep the app logo pinned to the right of the restricted bar */
  .app-logo-wrap{ display:flex; align-items:center; justify-self:end; grid-column:3; }
 
  /* center the nav group in the middle grid column */
@@ -243,6 +244,23 @@ body{ scrollbar-width: thin; scrollbar-color: #0f1b2a rgba(6,8,12,1); }
   display: block;
 }
 
+/* circular center logo in nav */
+.nav-item.logo{ padding: 0 8px; pointer-events: none; z-index: 2101 }
+.app-logo-circle{
+  width: calc(var(--menu-h) + 12px);
+  height: calc(var(--menu-h) + 12px);
+  border-radius: 999px;
+  background: radial-gradient(80% 120% at 50% 50%, #0F2027, #203A43); /* dark navy gradient */
+  border: none; /* remove inner border that overlapped the logo */
+  outline-offset: 2px; /* keep stroke clearly outside the circle */
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 0 14px rgba(255,255,255,0.05);
+  position: relative;
+  z-index: 2101; /* ensure above bar shadow */
+}
+.app-logo{ width: 70%; height: 70%; border-radius: 0; object-fit: contain }
+/* prevent hover scale on the logo item */
+.nav-item.logo .nav-icon-wrap{ transform: none !important }
+.nav-item.logo:hover .nav-icon{ transform: none !important; filter: none !important }
 .menu-footer{margin-top:12px; display:flex; justify-content:center}
 .nav-item.danger{background:#ef4444;color:#fff;border:none}
 .nav-item.danger:hover{filter:brightness(1.05)}
