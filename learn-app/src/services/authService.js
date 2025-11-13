@@ -1,19 +1,19 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000';
 
-function getAccessToken() { try { return localStorage.getItem('access_token'); } catch (e) { return null; } }
-function getRefreshToken() { try { return localStorage.getItem('refresh_token'); } catch (e) { return null; } }
+function getAccessToken() { try { return localStorage.getItem('access_token'); } catch { return null; } }
+function getRefreshToken() { try { return localStorage.getItem('refresh_token'); } catch { return null; } }
 function setTokens({ access, refresh }) {
   try {
     if (access) localStorage.setItem('access_token', access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
-  } catch (e) { /* ignore storage errors */ }
+  } catch { /* ignore storage errors */ }
 }
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, options);
   const text = await res.text();
   let data;
-  try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
+  try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
   if (!res.ok) {
     const msg = data.message || data.error || data.msg || res.statusText || 'Request failed';
     const err = new Error(msg);
@@ -129,8 +129,8 @@ export function logout() {
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
     // also clear any legacy quiz cache
-    try { localStorage.removeItem('quiz_cache_v1'); } catch (e) { /* ignore */ }
-  } catch (e) { /* ignore storage errors */ }
+    try { localStorage.removeItem('quiz_cache_v1'); } catch { /* ignore */ }
+  } catch { /* ignore storage errors */ }
 }
 
 export async function sendChat({ prompt, module, history, max_context_chars } = {}) {
@@ -312,6 +312,58 @@ export async function getQuizProgress({ module, signal } = {}) {
       }
       return { modules_progress: {} };
     }
+    throw e;
+  }
+}
+
+export async function uploadPdf(file) {
+  if (!file) throw new Error('No file provided');
+  const form = new FormData();
+  form.append('file', file);
+  const doPost = async (access) => request('/api/pdf/upload', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${access}` },
+    body: form,
+  });
+  const access = getAccessToken();
+  if (!access) { const e = new Error('Not authenticated'); e.status = 401; throw e; }
+  try {
+    return await doPost(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doPost(access2);
+    }
+    throw e;
+  }
+}
+
+export async function listPdfs() {
+  const doGet = async (access) => request('/api/pdf/list', {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${access}` },
+  });
+  const access = getAccessToken();
+  if (!access) { const e = new Error('Not authenticated'); e.status = 401; throw e; }
+  try { return await doGet(access); } catch (e) {
+    if (e?.status === 401) { await refreshAccessToken(); const access2 = getAccessToken(); return doGet(access2); }
+    throw e;
+  }
+}
+
+export async function quizFromPdf(docId, { count } = {}) {
+  if (!docId) throw new Error('docId required');
+  const body = { }; if (count) body.count = Number(count);
+  const doPost = async (access) => request(`/api/pdf/${docId}/quiz`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${access}` },
+    body: JSON.stringify(body),
+  });
+  const access = getAccessToken();
+  if (!access) { const e = new Error('Not authenticated'); e.status = 401; throw e; }
+  try { return await doPost(access); } catch (e) {
+    if (e?.status === 401) { await refreshAccessToken(); const access2 = getAccessToken(); return doPost(access2); }
     throw e;
   }
 }

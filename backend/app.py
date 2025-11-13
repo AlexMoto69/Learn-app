@@ -2,6 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from config import Config
 from extensions import db, jwt
+import os
 
 
 def create_app():
@@ -30,6 +31,14 @@ def create_app():
     # register user quiz routes (daily quiz + submit)
     from routes.user_quiz_routes import user_quiz as user_quiz_bp
     app.register_blueprint(user_quiz_bp, url_prefix="/api/quiz")
+
+    # register pdf routes
+    from routes.pdf_routes import pdf_bp
+    app.register_blueprint(pdf_bp, url_prefix="/api/pdf")
+
+    # ensure storage/pdf directory exists
+    storage_pdf = os.path.join(os.path.dirname(__file__), 'storage', 'pdfs')
+    os.makedirs(storage_pdf, exist_ok=True)
 
     @app.route("/")
     def home():

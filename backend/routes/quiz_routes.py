@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import os
 import json
 import re
@@ -77,35 +77,66 @@ SYSTEM_RO = """Ești un generator de itemi în limba română.
 """
 
 def build_prompt(lesson_text):
-    return f"""{SYSTEM_RO}
+    # concise, math-focused prompt template (use replace to inject lesson_text)
+    template = SYSTEM_RO + """
 
-Generează EXACT 5 întrebări grilă pe baza textului.
+Generează EXACT 5 întrebări practice în limba română, pe baza textului.
+Reguli (FOARTE importante):
+1) Răspunde DOAR cu blocul JSON marcat: <<<JSON ... JSON; (fără alt text sau numerotări). Nu adăuga explicații în afara JSON.
+2) Fiecare întrebare are EXACT 3 opțiuni; EXACT o singură opțiune corectă.
+3) Minimul: 2 întrebări de calcul/rezolvare (ex: calcule concrete, evaluări numerice). Restul: 1 aplicativ, 1 conceptual, 1 problemă scurtă.
+4) Câmpul "correct_index" trebuie să fie UN NUMĂR întreg 0-based (0 pentru prima opțiune). Trebuie să fie valoare numerică (ex: 0) — NU string, NU 'A'/'a' sau "1.".
+5) Explicațiile: 1–2 propoziții concise, independente de text (pentru calcule, arată pașii foarte scurt).
+6) NU include referințe la alte module sau surse — folosește doar textul furnizat ca context.
 
-IMPORTANT:
-- NU adăuga niciun text înainte sau după blocul JSON.
-- DOAR blocul JSON este permis.
-- Fiecare întrebare are EXACT 3 variante de răspuns.
-- Explicația trebuie să fie logică și concisă (nu „potrivit textului”).
-
-FORMAT OBLIGATORIU:
+Exemplu (format exact):
 <<<JSON
 [
-  {{
-    "question": "string",
-    "options": ["R1", "R2", "R3"],
+  {
+    "question": "Calculează: 27 + 58 = ?",
+    "options": ["85", "95", "80"],
     "correct_index": 0,
-    "explanation": "explicație logică (max 1-2 fraze)",
-    "source_sentence": 1
-  }},
-  ... 5 obiecte ...
+    "explanation": "27 + 58 = 85.",
+    "source_sentence": 0
+  }
 ]
 JSON;
 
 TEXT:
 {lesson_text}
 """
+    return template.replace('{lesson_text}', lesson_text)
 
+# --- NEW: biology-specific prompt for module quizzes
+def build_module_prompt(lesson_text):
+    template = SYSTEM_RO + """
 
+Generează EXACT 5 întrebări practice în limba română, pe baza textului (BIOLOGIE).
+Reguli (FOARTE importante):
+1) Răspunde DOAR cu blocul JSON marcat: <<<JSON ... JSON; (fără alt text sau numerotări).
+2) Fiecare întrebare are EXACT 3 opțiuni; EXACT o singură opțiune corectă.
+3) Structurează întrebările astfel: minim 2 întrebări conceptuale/aplicative (înțelegere și aplicare), 1 întrebarea de definire, 1 de interpretare/integrare și 1 mică problemă/calcul relevantă dacă este aplicabil.
+4) Câmpul "correct_index" trebuie să fie UN NUMĂR întreg 0-based (0 pentru prima opțiune).
+5) Explicațiile: 1–2 propoziții concise, standalone (nu spune "conform textului").
+6) Rămâi concentrat PE TEXTUL FURNIZAT; nu adăuga informații din alte module.
+
+EXEMPLU (format exact):
+<<<JSON
+[
+  {
+    "question": "Care organel cellular este principalul loc al producției de ATP?",
+    "options": ["Mitocondrie", "Nucleu", "Ribozom"],
+    "correct_index": 0,
+    "explanation": "Mitocondriile generează ATP în respirația celulară aerobă.",
+    "source_sentence": 0
+  }
+]
+JSON;
+
+TEXT:
+{lesson_text}
+"""
+    return template.replace('{lesson_text}', lesson_text)
 
 # ✅ MAIN ENDPOINT (cu header X-Module)
 @quiz.route("/biolaureat", methods=["GET"])
@@ -126,12 +157,20 @@ def generate_biolaureat_quiz():
     with open(module_path, "r", encoding="utf-8") as f:
         lesson_text = f.read()
 
-    prompt = build_prompt(lesson_text)
+    # use module-specific prompt (biology) for module quizzes
+    prompt = build_module_prompt(lesson_text)
     result = call_ollama_generate(prompt)
 
     questions, err = extract_json_block(result)
     if err:
         return jsonify(err), 500
+
+    # debug log raw result (truncated) -- we expect model to provide 0-based correct_index per prompt
+    try:
+        current_app.logger.debug('MODEL RAW (truncated): %s', (result or '')[:2000])
+        current_app.logger.debug('Parsed questions: %s', str(questions)[:2000])
+    except Exception:
+        pass
 
     return jsonify({
         "module": int(module),
@@ -160,5 +199,7 @@ def generate_from_text():
     questions, err = extract_json_block(result)
     if err:
         return jsonify(err), 500
+
+    # Note: no post-processing normalization; prompt requests 0-based indices.
 
     return jsonify({"questions": questions}), 200
