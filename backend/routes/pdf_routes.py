@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from extensions import db
 from models.pdf_document import PDFDocument
 from models.user import User
-import os, io, json
+import os, io
 import datetime
 
 # try import PyPDF2, otherwise we'll attempt a basic fallback
@@ -14,10 +14,7 @@ except Exception:
 
 pdf_bp = Blueprint('pdf', __name__)
 
-# keep UPLOAD_DIR for backward compatibility, but prefer DB storage
-UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'storage', 'pdfs')
-if not os.path.exists(UPLOAD_DIR):
-    os.makedirs(UPLOAD_DIR, exist_ok=True)
+# NOTE: we store PDFs in DB (data column) and do not save uploads to disk by default.
 
 
 @pdf_bp.route('/upload', methods=['POST'])
@@ -37,8 +34,6 @@ def upload_pdf():
 
     # simple filename sanitization
     filename = os.path.basename(f.filename)
-    safe_name = f"{datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')}_uid{user_id}_" + filename.replace(' ', '_')
-    target_path = os.path.join(UPLOAD_DIR, safe_name)
 
     # read bytes
     try:
@@ -47,14 +42,7 @@ def upload_pdf():
         current_app.logger.exception('read failed')
         return jsonify({'msg': 'failed to read file', 'error': str(e)}), 500
 
-    # attempt to save a copy to disk (optional, keep for compatibility)
-    try:
-        with open(target_path, 'wb') as fh:
-            fh.write(file_bytes)
-    except Exception:
-        # non-fatal: if save fails we'll continue storing in DB
-        current_app.logger.warning('failed to save copy to disk; continuing with DB storage')
-
+    # (no longer saving a copy to disk) -- store raw bytes in DB only
     # extract text from bytes
     extracted = ''
     try:
@@ -73,8 +61,8 @@ def upload_pdf():
         current_app.logger.exception('pdf extraction failed')
         extracted = ''
 
-    # store in DB; keep filepath for compatibility
-    doc = PDFDocument(owner_id=int(user_id), filename=filename, filepath=target_path, text=extracted, data=file_bytes)
+    # store in DB; do NOT keep a file on disk by default
+    doc = PDFDocument(owner_id=int(user_id), filename=filename, filepath=None, text=extracted, data=file_bytes)
     db.session.add(doc)
     db.session.commit()
 
@@ -142,3 +130,37 @@ def list_user_docs():
     user_id = int(get_jwt_identity())
     docs = PDFDocument.query.filter_by(owner_id=user_id).order_by(PDFDocument.created_at.desc()).all()
     return jsonify([d.to_dict() for d in docs]), 200
+
+
+@pdf_bp.route('/<int:doc_id>', methods=['DELETE'])
+@jwt_required()
+def delete_pdf(doc_id):
+    """Delete a PDF document: remove DB record and delete file from disk if present. Only owner may delete."""
+    user_id = int(get_jwt_identity())
+    doc = PDFDocument.query.get(doc_id)
+    if not doc:
+        return jsonify({'msg': 'document not found'}), 404
+    if int(doc.owner_id) != user_id:
+        return jsonify({'msg': 'forbidden'}), 403
+
+    # attempt to delete file on disk (if filepath set and file exists)
+    try:
+        if getattr(doc, 'filepath', None):
+            try:
+                if os.path.isfile(doc.filepath):
+                    os.remove(doc.filepath)
+            except Exception:
+                # not fatal — log and continue
+                current_app.logger.exception('failed to remove file from disk: %s', doc.filepath)
+    except Exception:
+        # defensive catch in case doc has unexpected attributes
+        current_app.logger.exception('error checking/removing file path')
+
+    try:
+        db.session.delete(doc)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.exception('failed to delete PDF from DB')
+        return jsonify({'msg': 'failed to delete document', 'error': str(e)}), 500
+
+    return jsonify({'msg': 'deleted', 'document_id': doc_id}), 200

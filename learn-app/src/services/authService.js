@@ -367,3 +367,17 @@ export async function quizFromPdf(docId, { count } = {}) {
     throw e;
   }
 }
+
+export async function deletePdf(docId) {
+  if (!docId) throw new Error('docId required');
+  const doDelete = async (access) => request(`/api/pdf/${docId}`, {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${access}` },
+  });
+  const access = getAccessToken();
+  if (!access) { const e = new Error('Not authenticated'); e.status = 401; throw e; }
+  try { return await doDelete(access); } catch (e) {
+    if (e?.status === 401) { await refreshAccessToken(); const access2 = getAccessToken(); return doDelete(access2); }
+    throw e;
+  }
+}

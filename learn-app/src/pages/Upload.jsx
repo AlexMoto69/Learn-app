@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 import './Upload.css'
-import { uploadPdf, listPdfs, quizFromPdf, submitQuiz } from '../services/authService'
+import { uploadPdf, listPdfs, quizFromPdf, submitQuiz, deletePdf } from '../services/authService'
 
 export default function Upload() {
   const [file, setFile] = useState(null)
@@ -156,9 +156,12 @@ export default function Upload() {
             <ul style={{ listStyle:'none', margin:0, padding:0, display:'grid', gap:'.5rem' }}>
               {docs.map(doc => (
                 <li key={doc.id} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:'.5rem', padding:'.5rem .75rem', border:'1px solid rgba(255,255,255,0.06)', borderRadius:8 }}>
-                  <div style={{ display:'flex', flexDirection:'column' }}>
-                    <span style={{ fontWeight:600 }}>{doc.filename}</span>
-                    <span style={{ opacity:.8, fontSize:'.9rem' }}>Încărcat: {new Date(doc.created_at).toLocaleString()}</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:'.6rem' }}>
+                    <button title="Șterge" aria-label="Șterge document" onClick={async () => { try { await deletePdf(doc.id); await refreshDocs(); } catch(e){ setError(e?.message || 'Eroare la ștergere') } }} style={{ background:'transparent', border:0, color:'salmon', cursor:'pointer', fontSize:'1rem' }}>✕</button>
+                    <div style={{ display:'flex', flexDirection:'column' }}>
+                      <span style={{ fontWeight:600 }}>{doc.filename}</span>
+                      <span style={{ opacity:.8, fontSize:'.9rem' }}>Încărcat: {new Date(doc.created_at).toLocaleString()}</span>
+                    </div>
                   </div>
                   <button className="btn" onClick={() => startQuiz(doc)}>Generează quiz</button>
                 </li>
