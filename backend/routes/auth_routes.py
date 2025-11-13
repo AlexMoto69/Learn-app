@@ -3,6 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from extensions import db
 from models.user import User
 import json
+import datetime
 
 auth = Blueprint("auth", __name__)
 
@@ -60,13 +61,7 @@ def login():
         "message": "Login successful",
         "access_token": token,
         "refresh_token": refresh,
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-            "total_score": user.total_score,
-            "current_streak": user.current_streak
-        }
+        "user": user.to_dict()
     }), 200
 
 
@@ -145,9 +140,46 @@ def update_profile():
             val = body.get(key)
             if not isinstance(val, list):
                 return jsonify({"msg": f"{key} must be an array/list"}), 400
+            # ensure ints
+            try:
+                val_clean = [int(x) for x in val]
+            except Exception:
+                return jsonify({"msg": f"{key} must contain integers"}), 400
             # store as JSON text
-            setattr(user, key, json.dumps(val))
-            updated[key] = val
+            setattr(user, key, json.dumps(val_clean))
+            updated[key] = val_clean
+
+    # update modules_progress (expect map: module_id -> quizzes_completed)
+    if "modules_progress" in body:
+        mp = body.get("modules_progress")
+        if not isinstance(mp, dict):
+            return jsonify({"msg": "modules_progress must be an object/dict"}), 400
+        safe_map = {}
+        try:
+            for k, v in mp.items():
+                ik = int(k)
+                iv = int(v)
+                if iv < 0 or iv > 8:
+                    return jsonify({"msg": "modules_progress values must be between 0 and 8"}), 400
+                safe_map[str(ik)] = iv
+        except Exception:
+            return jsonify({"msg": "modules_progress must be a map of integers"}), 400
+        user.modules_progress = json.dumps(safe_map)
+        updated["modules_progress"] = {int(k): v for k, v in safe_map.items()}
+
+    # update last_daily_quiz_date (expect ISO date or null)
+    if "last_daily_quiz_date" in body:
+        val = body.get("last_daily_quiz_date")
+        if val is None:
+            user.last_daily_quiz_date = None
+            updated["last_daily_quiz_date"] = None
+        else:
+            try:
+                d = datetime.date.fromisoformat(val)
+                user.last_daily_quiz_date = d
+                updated["last_daily_quiz_date"] = d.isoformat()
+            except Exception:
+                return jsonify({"msg": "last_daily_quiz_date must be an ISO date string YYYY-MM-DD or null"}), 400
 
     db.session.add(user)
     db.session.commit()

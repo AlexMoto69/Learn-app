@@ -2,8 +2,10 @@
 import React, { useState } from 'react';
 import './LoginRegister.css';
 import { login as apiLogin } from '../services/authService';
+import { useAuth } from '../contexts/authContext';
 
 export default function Login({ onLogin, onRegisterClick }) {
+    const { loginUser } = useAuth() || {};
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -25,12 +27,21 @@ export default function Login({ onLogin, onRegisterClick }) {
             const refresh = data.refresh_token || data.refreshToken;
             const user = data.user || null;
 
-            if (token) localStorage.setItem('access_token', token);
-            if (refresh) localStorage.setItem('refresh_token', refresh);
-            if (user) localStorage.setItem('user', JSON.stringify(user));
+            try { if (token) localStorage.setItem('access_token', token); } catch { }
+            try { if (refresh) localStorage.setItem('refresh_token', refresh); } catch { }
+            try { if (user) localStorage.setItem('user', JSON.stringify(user)); } catch { }
 
-            if (onLogin) onLogin({ token, user, raw: data });
-            else window.location.reload();
+            // Clear legacy quiz cache when a user logs in to avoid leaking progress between accounts
+            try { localStorage.removeItem('quiz_cache_v1'); } catch { }
+
+            // prefer to update app state via context if available
+            if (loginUser) {
+                loginUser({ token, user });
+                if (onLogin) onLogin({ token, user, raw: data });
+            } else {
+                if (onLogin) onLogin({ token, user, raw: data });
+                else window.location.reload();
+            }
 
             setPassword('');
         } catch (err) {

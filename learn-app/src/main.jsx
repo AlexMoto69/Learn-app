@@ -5,6 +5,7 @@ import Register from './LoginRegister/Register.jsx'
 import Splash from './components/Splash.jsx'
 import './index.css'
 import App from './App.jsx'
+import logo2 from './assets/logo2.png'
 
 function RootApp({ initialPage = 'login' }) {
   const [page, setPage] = useState(initialPage) // 'login' | 'register' | 'app'
@@ -47,6 +48,20 @@ createRoot(document.getElementById('root')).render(
     <Boot />
   </StrictMode>,
 )
+
+// Set app favicon to logo2.png (Vite will resolve the asset URL)
+(function setFavicon(){
+  try {
+    let link = document.querySelector("link[rel='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/png';
+    link.href = logo2;
+  } catch (e) { void e }
+})();
 
 // dynamically measure the visible header/menu height and expose it to CSS via --app-header-height
 function setAppHeaderHeight() {

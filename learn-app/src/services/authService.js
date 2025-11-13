@@ -1,19 +1,19 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://127.0.0.1:5000';
 
-function getAccessToken() { try { return localStorage.getItem('access_token'); } catch { return null } }
-function getRefreshToken() { try { return localStorage.getItem('refresh_token'); } catch { return null } }
+function getAccessToken() { try { return localStorage.getItem('access_token'); } catch (e) { return null; } }
+function getRefreshToken() { try { return localStorage.getItem('refresh_token'); } catch (e) { return null; } }
 function setTokens({ access, refresh }) {
   try {
     if (access) localStorage.setItem('access_token', access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
-  } catch { /* ignore storage errors */ }
+  } catch (e) { /* ignore storage errors */ }
 }
 
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, options);
   const text = await res.text();
   let data;
-  try { data = text ? JSON.parse(text) : {}; } catch { data = { message: text }; }
+  try { data = text ? JSON.parse(text) : {}; } catch (e) { data = { message: text }; }
   if (!res.ok) {
     const msg = data.message || data.error || data.msg || res.statusText || 'Request failed';
     const err = new Error(msg);
@@ -128,7 +128,9 @@ export function logout() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user');
-  } catch { /* ignore storage errors */ }
+    // also clear any legacy quiz cache
+    try { localStorage.removeItem('quiz_cache_v1'); } catch (e) { /* ignore */ }
+  } catch (e) { /* ignore storage errors */ }
 }
 
 export async function sendChat({ prompt, module, history, max_context_chars } = {}) {
@@ -163,11 +165,53 @@ export async function getModuleQuiz(moduleNumber, opts = {}) {
   const mod = String(moduleNumber || '').trim();
   if (!mod) throw new Error('Module number required');
   const { signal } = opts;
-  return request('/api/quiz/biolaureat', {
+
+  const path = '/api/quiz/biolaureat';
+  const doGet = async (access) => request(path, {
     method: 'GET',
-    headers: { 'X-Module': mod },
+    headers: {
+      'Authorization': `Bearer ${access}`,
+      'X-Module': mod,
+    },
     signal,
   });
+
+  const access = getAccessToken();
+  if (!access) {
+    const e = new Error('Not authenticated');
+    e.status = 401; throw e;
+  }
+  try {
+    return await doGet(access);
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      return doGet(access2);
+    }
+    throw e;
+  }
+}
+
+/**
+ * openModule(moduleNumber, { fetchQuiz: boolean, signal })
+ * - Always fetches live progress from `/api/quiz/progress?module=...`
+ * - If fetchQuiz=true it will also fetch the generated quiz afterwards
+ * - Returns { progress, quiz } or { progress }
+ */
+export async function openModule(moduleNumber, opts = {}) {
+  if (moduleNumber === undefined || moduleNumber === null) throw new Error('Module number required');
+  const { fetchQuiz = false, signal } = opts;
+
+  // fetch progress from server
+  const progress = await getQuizProgress({ module: moduleNumber, signal });
+
+  if (fetchQuiz) {
+    const quiz = await getModuleQuiz(moduleNumber, { signal });
+    return { progress, quiz };
+  }
+
+  return { progress };
 }
 
 export async function submitQuiz(payload) {
@@ -197,10 +241,11 @@ export async function submitQuiz(payload) {
   }
 }
 
-export async function getDailyQuiz({ module, count, signal } = {}) {
+export async function getDailyQuiz({ module, count, another, signal } = {}) {
   const params = new URLSearchParams();
   if (module) params.set('module', String(module));
   if (count) params.set('count', String(count));
+  if (another) params.set('another', 'true');
   const qs = params.toString();
   const path = `/api/quiz/daily${qs ? `?${qs}` : ''}`;
 
@@ -222,6 +267,50 @@ export async function getDailyQuiz({ module, count, signal } = {}) {
       await refreshAccessToken();
       const access2 = getAccessToken();
       return doGet(access2);
+    }
+    throw e;
+  }
+}
+
+export async function getQuizProgress({ module, signal } = {}) {
+  const params = new URLSearchParams();
+  if (module) params.set('module', String(module));
+  const qs = params.toString();
+  const path = `/api/quiz/progress${qs ? `?${qs}` : ''}`;
+
+  const doGet = async (access) => request(path, {
+    method: 'GET',
+    headers: { 'Authorization': `Bearer ${access}` },
+    signal,
+  });
+
+  const access = getAccessToken();
+  if (!access) {
+    const e = new Error('Not authenticated');
+    e.status = 401; throw e;
+  }
+  try {
+    const res = await doGet(access);
+    // Backend now returns a plain map: { [moduleId]: quizzes_completed }
+    if (res && typeof res === 'object' && !Array.isArray(res)) {
+      if (Object.prototype.hasOwnProperty.call(res, 'modules_progress')) {
+        return res;
+      }
+      return { modules_progress: res };
+    }
+    return { modules_progress: {} };
+  } catch (e) {
+    if (e?.status === 401) {
+      await refreshAccessToken();
+      const access2 = getAccessToken();
+      const res = await doGet(access2);
+      if (res && typeof res === 'object' && !Array.isArray(res)) {
+        if (Object.prototype.hasOwnProperty.call(res, 'modules_progress')) {
+          return res;
+        }
+        return { modules_progress: res };
+      }
+      return { modules_progress: {} };
     }
     throw e;
   }

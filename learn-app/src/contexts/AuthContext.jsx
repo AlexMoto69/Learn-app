@@ -18,7 +18,7 @@ export function AuthProvider({ children }) {
           const profile = await authService.verifyToken(token);
           if (mounted) {
             setUser(profile);
-            localStorage.setItem('user', JSON.stringify(profile));
+            try { localStorage.setItem('user', JSON.stringify(profile)); } catch { /* ignore */ }
           }
         } catch (err) {
           console.warn('Token verify failed:', err.message || err);
@@ -34,18 +34,20 @@ export function AuthProvider({ children }) {
 
   function loginUser({ token: newToken, user: newUser } = {}) {
     if (newToken) {
-      localStorage.setItem('access_token', newToken);
+      try { localStorage.setItem('access_token', newToken); } catch { /* ignore */ }
       setToken(newToken);
     }
     if (newUser) {
-      localStorage.setItem('user', JSON.stringify(newUser));
+      try { localStorage.setItem('user', JSON.stringify(newUser)); } catch { /* ignore */ }
       setUser(newUser);
     }
   }
 
   function logout() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user');
+    try { localStorage.removeItem('access_token'); } catch { /* ignore */ }
+    try { localStorage.removeItem('refresh_token'); } catch { /* ignore */ }
+    try { localStorage.removeItem('user'); } catch { /* ignore */ }
+    try { localStorage.removeItem('quiz_cache_v1'); } catch { /* ignore */ }
     setToken(null);
     setUser(null);
   }

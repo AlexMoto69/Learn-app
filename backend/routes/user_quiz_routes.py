@@ -26,15 +26,47 @@ def daily_quiz():
     count = int(request.args.get("count", 5))
 
     # Helper to load modules list from user model (JSON text)
-    def _safe_load(s):
+    def _safe_load_list(s):
         try:
             v = json.loads(s) if s else []
             return [int(x) for x in v] if isinstance(v, list) else []
         except Exception:
             return []
 
-    user_in_prog = _safe_load(getattr(user, "modules_in_progress", "[]"))
-    user_completed = _safe_load(getattr(user, "completed_modules", "[]"))
+    user_in_prog = _safe_load_list(getattr(user, "modules_in_progress", "[]"))
+    user_completed = _safe_load_list(getattr(user, "completed_modules", "[]"))
+
+    # determine if daily already completed today (robust to string/datetime/date)
+    def _date_from_value(v):
+        if v is None:
+            return None
+        if isinstance(v, datetime.date) and not isinstance(v, datetime.datetime):
+            return v
+        if isinstance(v, datetime.datetime):
+            return v.date()
+        if isinstance(v, str):
+            try:
+                return datetime.date.fromisoformat(v)
+            except Exception:
+                try:
+                    # try parse YYYY-MM-DD maybe with time
+                    return datetime.datetime.fromisoformat(v).date()
+                except Exception:
+                    return None
+        return None
+
+    today = datetime.date.today()
+    last_daily = _date_from_value(getattr(user, "last_daily_quiz_date", None))
+    already_completed_today = (last_daily == today)
+
+    # If already completed, return early with progress info
+    if already_completed_today:
+        return jsonify({
+            "msg": "daily quiz already completed",
+            "already_completed_today": True,
+            "modules_in_progress": user_in_prog,
+            "completed_modules": user_completed
+        }), 200
 
     modules_to_use = []
 
@@ -170,7 +202,7 @@ def daily_quiz():
                         if not text or not isinstance(text, str):
                             return ""
                         # split into sentences (simple split by .!?), keep first 2
-                        parts = re.split(r'(?<=[\.!?])\s+', text.strip())
+                        parts = re.split(r'(?<=[.!?])\s+', text.strip())
                         if not parts:
                             return text.strip()
                         sel = parts[0:2]
@@ -194,7 +226,7 @@ def daily_quiz():
         # if anything goes wrong, ignore regeneration and return sanitized questions
         pass
 
-    return jsonify({"modules": modules_to_use, "questions": questions}), 200
+    return jsonify({"modules": modules_to_use, "questions": questions, "already_completed_today": already_completed_today}), 200
 
 
 # Submit quiz results
@@ -207,12 +239,14 @@ def submit_quiz():
     if not user:
         return jsonify({"msg": "User not found"}), 404
 
-    # Expected body: { "score": int, "max_score": int, "questions_correct": int, "questions_total": int, "module": int (optional) }
+    # Expected body: { "score": int, "max_score": int, "questions_correct": int, "questions_total": int, "module": int (optional), "daily": bool (optional), "quiz_index": int (optional) }
     score = body.get("score")
     max_score = body.get("max_score") or body.get("questions_total")
     correct = body.get("questions_correct")
     total = body.get("questions_total")
     module = body.get("module")
+    is_daily = bool(body.get("daily", False))
+    quiz_index = body.get("quiz_index")
 
     if score is None and correct is None:
         return jsonify({"msg": "score or questions_correct required"}), 400
@@ -222,7 +256,6 @@ def submit_quiz():
         if correct is not None:
             points = int(correct)
         elif score is not None:
-            # if a raw score (points) provided, use that
             points = int(score)
         else:
             points = 0
@@ -266,61 +299,104 @@ def submit_quiz():
 
     user.last_quiz_date = today
 
-    # Defensive check: ensure User model has the module columns
-    if not (hasattr(user, 'modules_in_progress') and hasattr(user, 'completed_modules')):
-        # give clear instructions to run the helper script that adds the columns
+    # Defensive check: ensure User model has necessary module/daily columns
+    if not (hasattr(user, 'modules_in_progress') and hasattr(user, 'completed_modules') and hasattr(user, 'modules_progress') and hasattr(user, 'last_daily_quiz_date')):
         return jsonify({
-            "msg": "Database schema missing columns for module progress.",
+            "msg": "Database schema missing columns for module progress or daily tracking.",
             "action": "Run: python scripts\\apply_db_alter_env.py then restart the server",
             "note": "If you previously dropped the users table, recreate it or run migrations."
         }), 500
 
-    # Module progression logic
-    def _safe_load(s):
+    # helpers for safe loading
+    def _safe_load_list(s):
         try:
             v = json.loads(s) if s else []
             return [int(x) for x in v] if isinstance(v, list) else []
         except Exception:
             return []
 
-    in_prog = _safe_load(user.modules_in_progress)
-    completed = _safe_load(user.completed_modules)
+    def _safe_load_map(s):
+        try:
+            v = json.loads(s) if s else {}
+            if isinstance(v, dict):
+                out = {}
+                for k, val in v.items():
+                    try:
+                        out[int(k)] = int(val)
+                    except Exception:
+                        continue
+                return out
+            return {}
+        except Exception:
+            return {}
 
+    in_prog = _safe_load_list(user.modules_in_progress)
+    completed = _safe_load_list(user.completed_modules)
+    progress_map = _safe_load_map(getattr(user, "modules_progress", "{}"))  # module_id -> quizzes_completed (0..8)
+
+    # normalize module param
     if module is not None:
         try:
             module = int(module)
         except Exception:
             module = None
 
+    # determine whether this submission counts as 'passed' the quiz
+    completed_flag = False
+    try:
+        if percent is not None:
+            completed_flag = (percent >= 70)
+        else:
+            completed_flag = int(score) >= 70 if score is not None else False
+    except Exception:
+        completed_flag = False
+
+    # Module progression logic: sequential quizzes, 8 per module
     if module:
-        # if not recorded anywhere, add to in_progress
+        # ensure module recorded in in_progress if not completed
         if module not in in_prog and module not in completed:
             in_prog.append(module)
 
-        # determine completion: threshold 70% or correct/total >= 0.7
-        completed_flag = False
+        current_done = progress_map.get(module, 0)
+
+        # interpret quiz_index as 1-based; only increment if it's the next quiz (or quiz_index omitted)
         try:
-            if percent is not None:
-                completed_flag = (percent >= 70)
-            else:
-                # fallback: use numeric score if present
-                completed_flag = int(score) >= 70 if score is not None else False
+            qi = int(quiz_index) if quiz_index is not None else None
         except Exception:
-            completed_flag = False
+            qi = None
 
         if completed_flag:
-            # move module from in_progress to completed
+            if qi is not None:
+                # only increment if they completed the next unlocked quiz
+                if qi == current_done + 1:
+                    current_done = min(8, current_done + 1)
+                    progress_map[module] = current_done
+            else:
+                # no index provided: assume they completed the next quiz
+                current_done = min(8, current_done + 1)
+                progress_map[module] = current_done
+
+        # if module fully completed, move to completed_modules and remove from in_progress
+        if progress_map.get(module, 0) >= 8:
             if module in in_prog:
                 in_prog = [m for m in in_prog if m != module]
             if module not in completed:
                 completed.append(module)
 
-    # write back lists as JSON text
+    # mark daily quiz completion separately
+    if is_daily and completed_flag:
+        user.last_daily_quiz_date = today
+
+    # write back lists/maps as JSON text
     user.modules_in_progress = json.dumps(sorted(set(in_prog)))
     user.completed_modules = json.dumps(sorted(set(completed)))
+    user.modules_progress = json.dumps({str(k): int(v) for k, v in progress_map.items()})
 
     db.session.add(user)
     db.session.commit()
+
+    # return modules_progress as int keys
+    modules_progress_int = {int(k): v for k, v in _safe_load_map(getattr(user, "modules_progress", "{}")).items()}
 
     return jsonify({
         "msg": "quiz recorded",
@@ -329,5 +405,36 @@ def submit_quiz():
         "longest_streak": user.longest_streak,
         "last_quiz_date": user.last_quiz_date.isoformat(),
         "modules_in_progress": json.loads(user.modules_in_progress),
-        "completed_modules": json.loads(user.completed_modules)
+        "completed_modules": json.loads(user.completed_modules),
+        "modules_progress": modules_progress_int,
+        "already_completed_today": (getattr(user, "last_daily_quiz_date", None) == today)
     }), 200
+
+
+@user_quiz.route("/progress", methods=["GET"])  # /api/quiz/progress
+@jwt_required()
+def quiz_progress():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    def _safe_load_map(s):
+        try:
+            v = json.loads(s) if s else {}
+            if isinstance(v, dict):
+                out = {}
+                for k, val in v.items():
+                    try:
+                        out[int(k)] = int(val)
+                    except Exception:
+                        continue
+                return out
+            return {}
+        except Exception:
+            return {}
+
+    # Only return the modules_progress mapping (module_id -> quizzes_completed)
+    modules_progress = _safe_load_map(getattr(user, "modules_progress", "{}"))
+
+    return jsonify(modules_progress), 200

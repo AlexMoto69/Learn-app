@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import './Lessons.css';
-import { getDailyQuiz, submitQuiz } from '../services/authService';
+import { getDailyQuiz, submitQuiz, getProfile } from '../services/authService';
 
 export default function Daily(){
   const QUIZ_QUESTION_COUNT = 5;
@@ -17,15 +17,34 @@ export default function Daily(){
   const [selected, setSelected] = useState(null);
   const [revealed, setRevealed] = useState(false);
 
+  const [dailyNote, setDailyNote] = useState(null);
+  const [alreadyDoneToday, setAlreadyDoneToday] = useState(false);
+
   const answersRef = useRef({});
   const selectionsRef = useRef({});
 
   const current = questions[qIndex] || null;
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const prof = await getProfile();
+        const last = prof?.last_daily_quiz_date;
+        if (typeof last === 'string' && last.trim()) {
+          const today = new Date();
+          const isoToday = today.toISOString().slice(0,10);
+          if (last.slice(0,10) === isoToday) setAlreadyDoneToday(true);
+        }
+      } catch (e) { void e; }
+    })();
+    return () => { if (timerRef.current) clearInterval(timerRef.current) };
+  }, []);
+
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, []);
 
-  async function loadDaily(){
+  async function loadDaily({ another } = {}){
     setError(null);
+    setDailyNote(null);
     setQuestions([]);
     setQIndex(0); setSelected(null); setRevealed(false);
 
@@ -37,18 +56,23 @@ export default function Daily(){
     abortRef.current = new AbortController();
 
     try {
-      const data = await getDailyQuiz({ signal: abortRef.current.signal });
-      const qs = Array.isArray(data?.questions) ? data.questions.slice(0, QUIZ_QUESTION_COUNT) : [];
-      if (!qs.length) {
-        setError(data?.msg || 'Nu am primit întrebări pentru Daily Challenge.');
+      const data = await getDailyQuiz({ signal: abortRef.current.signal, another: !!another });
+      if (data?.already_completed_today && (!Array.isArray(data?.questions) || data.questions.length === 0)) {
+        setError(data?.msg || 'Deja ți-ai făcut Daily-ul de astăzi. Îți pot genera încă unul.');
+        setQuestions([]);
       } else {
-        setQuestions(qs);
+        const qs = Array.isArray(data?.questions) ? data.questions.slice(0, QUIZ_QUESTION_COUNT) : [];
+        if (!qs.length) {
+          setError(data?.msg || 'Nu am primit întrebări pentru Daily Challenge.');
+        } else {
+          if (data?.already_completed_today) {
+            setDailyNote('Deja ți-ai făcut Daily-ul de astăzi. Ți-am generat încă un set de întrebări.');
+          }
+          setQuestions(qs);
+        }
       }
     } catch (e) {
-      if (e?.name === 'AbortError') {
-        // user canceled; ignore and keep silent
-        return;
-      }
+      if (e?.name === 'AbortError') { return; }
       const msg = e?.message || 'Eroare de rețea';
       setError(`Eroare: ${msg}`);
     } finally {
@@ -62,6 +86,7 @@ export default function Daily(){
     setLoading(false);
     if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
     if (abortRef.current) { try { abortRef.current.abort(); } catch (err) { void err; } abortRef.current = null; }
+    setDailyNote(null);
   }
 
   function chooseAnswer(i){
@@ -82,7 +107,8 @@ export default function Daily(){
     });
 
     try {
-      await submitQuiz({ questions_correct: correct, questions_total: total });
+      await submitQuiz({ questions_correct: correct, questions_total: total, daily: true });
+      setAlreadyDoneToday(true);
     } catch(err){ void err; }
 
     setReport({ summary: { correct, total }, items });
@@ -119,12 +145,28 @@ export default function Daily(){
     <div className="lessons-root">
       <div className="lessons-header"><h3>Daily Challenge</h3></div>
 
-      {error && <div style={{ padding: '1rem', color: '#ffbaba' }}>{error}</div>}
+      {error && (
+        <div style={{ padding: '1rem', color: '#ffbaba' }}>
+          {error}
+          <div style={{ marginTop: '.5rem' }}>
+            <button className="ctrl" onClick={() => loadDaily({ another: true })}>Generează încă un Daily</button>
+          </div>
+        </div>
+      )}
 
       {idle && (
         <article className="lesson-card" style={{ textAlign:'center', padding:'1.2rem' }}>
-          <p>Apasă butonul pentru a genera Daily Challenge (poate dura 30–60 secunde).</p>
-          <button className="ctrl" onClick={loadDaily}>Începe Daily</button>
+          {alreadyDoneToday ? (
+            <>
+              <p>Deja ți-ai făcut Daily-ul de astăzi. Vrei încă unul?</p>
+              <button className="ctrl" onClick={() => loadDaily({ another: true })}>Generează încă un Daily</button>
+            </>
+          ) : (
+            <>
+              <p>Apasă butonul pentru a genera Daily Challenge (poate dura 30–60 secunde).</p>
+              <button className="ctrl" onClick={() => loadDaily()}>Începe Daily</button>
+            </>
+          )}
         </article>
       )}
 
@@ -140,6 +182,11 @@ export default function Daily(){
 
       {!loading && questions.length > 0 && !report && (
         <article className="lesson-card">
+          {dailyNote && (
+            <div style={{ marginBottom: '.6rem', color: 'rgba(230,238,248,0.9)' }}>
+              {dailyNote}
+            </div>
+          )}
           <div className="question">{current?.question}</div>
           <div className="options">
             {current?.options?.map((opt, i) => {
@@ -193,7 +240,14 @@ export default function Daily(){
           </div>
           <div className="report-actions">
             <button className="btn" onClick={download}>Descarcă raport</button>
-            <button className="btn" onClick={() => setReport(null)}>Închide</button>
+            <button className="btn" onClick={() => {
+              setReport(null);
+              setQuestions([]);
+              setError(null);
+              setDailyNote(null);
+              setQIndex(0); setSelected(null); setRevealed(false);
+              window.scrollTo(0,0);
+            }}>Închide</button>
           </div>
         </div>
       )}
