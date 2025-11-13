@@ -36,6 +36,10 @@ def create_app():
     from routes.pdf_routes import pdf_bp
     app.register_blueprint(pdf_bp, url_prefix="/api/pdf")
 
+    # register friends routes
+    from routes.friends_routes import friends_bp
+    app.register_blueprint(friends_bp, url_prefix="/api/friends")
+
     # ensure storage/pdf directory exists
     storage_pdf = os.path.join(os.path.dirname(__file__), 'storage', 'pdfs')
     os.makedirs(storage_pdf, exist_ok=True)

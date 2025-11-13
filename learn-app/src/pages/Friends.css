@@ -1,0 +1,32 @@
+.friends-root{padding:calc(var(--menu-h,84px) + 18px) 1.2rem 1.2rem;color:var(--text,#e6eef8)}
+.friends-grid{display:grid;gap:1rem;max-width:1000px;margin:0 auto}
+/* increase opacity for readability */
+.friends-card{border-radius:12px;background:rgba(24,20,37,0.6);box-shadow:0 6px 16px rgba(0,0,0,0.45);padding:1rem;border:1px solid rgba(255,255,255,0.08)}
+.friends-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.friends-title{margin:0;font-size:1.25rem}
+
+.friends-search{display:flex;gap:.6rem}
+.friends-input{flex:1;padding:.6rem .8rem;border-radius:10px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.08);color:var(--text)}
+
+.flist{list-style:none;margin:0;padding:0;display:grid;gap:.5rem}
+.frow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;padding:.6rem .8rem;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:rgba(255,255,255,0.04)}
+.finfo{display:flex;align-items:center;gap:.6rem}
+.favatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg, #6b63ff, #393052);display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.9rem}
+.fmeta{display:flex;flex-direction:column}
+.fname{font-weight:600}
+.fstats{opacity:.9;font-size:.9rem}
+
+.btn{padding:.55rem .9rem;border-radius:9px;background:#393052;border:1px solid rgba(255,255,255,0.12);color:#fff;cursor:pointer}
+.btn.primary{background:#6b63ff;border-color:transparent}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.25)}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin-top:.5rem}
+/* less transparent stat cards */
+.stat{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:10px;padding:.7rem .9rem}
+.stat .label{opacity:.95;font-size:.9rem;display:flex;align-items:center;gap:.45rem}
+.stat .value{font-size:1.15rem;font-weight:700;margin-top:.25rem}
+.sicon{font-size:1rem;display:inline-block}
+
+.modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);z-index:1000}
+.modal-card{width:min(560px,92vw);border-radius:12px;background:rgba(24,20,37,0.8);box-shadow:0 12px 30px rgba(0,0,0,0.6);padding:1rem;border:1px solid rgba(255,255,255,0.12)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}

@@ -4,7 +4,6 @@ from extensions import db
 from models.pdf_document import PDFDocument
 from models.user import User
 import os, io
-import datetime
 
 # try import PyPDF2, otherwise we'll attempt a basic fallback
 try:

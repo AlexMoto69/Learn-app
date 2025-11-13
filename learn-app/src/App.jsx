@@ -6,6 +6,7 @@ import Chatbot from './pages/Chatbot'
 import Profile from './pages/Profile'
 import Upload from './pages/Upload'
 import Daily from './pages/Daily'
+import Friends from './pages/Friends'
 
 function Placeholder({ title }) {
   return (
@@ -29,7 +30,7 @@ export default function App({ initialScreen = 'lessons' }){
       {screen === 'lessons' && <Lessons />}
       {screen === 'daily' && <Daily />}
       {screen === 'chatbot' && <Chatbot />}
-      {screen === 'friends' && <Placeholder title="Friends" />}
+      {screen === 'friends' && <Friends />}
       {screen === 'profile' && <Profile />}
       {screen === 'upload' && <Upload />}
     </div>

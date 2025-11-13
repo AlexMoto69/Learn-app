@@ -381,3 +381,43 @@ export async function deletePdf(docId) {
     throw e;
   }
 }
+
+export async function searchUsers(q){
+  const params = new URLSearchParams(); if (q) params.set('q', q)
+  const doGet = async (access) => request(`/api/friends/search?${params.toString()}`, {
+    method: 'GET', headers: { 'Authorization': `Bearer ${access}` }
+  });
+  const access = getAccessToken(); if (!access) { const e = new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doGet(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doGet(getAccessToken()) } throw e }
+}
+
+export async function getUserPublic(userId){
+  const doGet = async (access) => request(`/api/friends/${userId}`, { method:'GET', headers: { 'Authorization': `Bearer ${access}` } });
+  const access = getAccessToken(); if (!access) { const e = new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doGet(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doGet(getAccessToken()) } throw e }
+}
+
+export async function addFriend(friend_id){
+  const body = { friend_id };
+  const doPost = async (access) => request('/api/friends/add', { method:'POST', headers: { 'Content-Type':'application/json', 'Authorization': `Bearer ${access}` }, body: JSON.stringify(body) });
+  const access = getAccessToken(); if (!access) { const e = new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doPost(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doPost(getAccessToken()) } throw e }
+}
+
+export async function removeFriend(user_id){
+  const doDel = async (access) => request(`/api/friends/${user_id}`, { method:'DELETE', headers: { 'Authorization': `Bearer ${access}` } });
+  const access = getAccessToken(); if (!access) { const e = new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doDel(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doDel(getAccessToken()) } throw e }
+}
+
+export async function listFriends(){
+  const doGet = async (access) => request('/api/friends/list', { method:'GET', headers: { 'Authorization': `Bearer ${access}` } });
+  const access = getAccessToken(); if (!access) { const e = new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doGet(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doGet(getAccessToken()) } throw e }
+}
+
+export async function friendsStats(){
+  const doGet = async (access) => request('/api/friends/stats', { method:'GET', headers: { 'Authorization': `Bearer ${access}` } });
+  const access = getAccessToken(); if (!access){ const e=new Error('Not authenticated'); e.status=401; throw e }
+  try { return await doGet(access) } catch (e) { if (e?.status===401){ await refreshAccessToken(); return doGet(getAccessToken()) } throw e }
+}
